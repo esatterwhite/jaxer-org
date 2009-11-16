@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+{% endblock %}
+{% block content %}
+		<div id="main">
+			<div class="pt-8">
+				<div class="pt-10 mt-10">
+					<div id="promo-head" class="mt-10">
+						<div class="fl width33">            
+                        	<div class="fl width80" id="scroll-pane">
+                            <div id="scroll-panel">
+                            	<div class="scroll-item" id="content-1">{{ MEDIA_URL }}</div>
+                                <div class="scroll-item" id="content-2">Good bye world</div>
+                                <div class="scroll-item" id="content-3">hello world Again</div>
+                                <div class="scroll-item" id="content-4">hello world asdf asdfa sdfa sdfasd fasdf asdf asdf asdf asdf </div>
+                                <br class="cr" />
+                            </div>
+                            </div>
+                            <div class="fr" id="controls">
+                            	<ul>
+                                	<li id="control-1"></li>
+                                    <li class="on" id="control-2"></li>
+                                    <li id="control-3"></li>
+                                    <li id="control-4"></li>
+                                </ul>
+                            </div>
+                            </div>
+						<div class="fr width66"><img src="{{ MEDIA_URL }}images/jaxer-placeholder.png" height="200" width="608" /></div>
+						<br class="clearfloat" />
+					</div>
+				</div>
+				<div class="width33 fl mr-6 p_all-4 rounded bg_nearblack" id="main-sidebar">
+                	<h2>Recent Discussion</h2>
+                	<table class="tbl-list">
+                        <tr>
+							<td class="w-50">
+                            	<img src="" width="50" height="50" />
+                            </td>
+                            <td>
+                            	<h3><a href="#">title</a></h3>
+								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur <a href="#">more...</a></p>
+                            </td>                        
+                        </tr>
+                        <tr class="alt">
+							<td class="w-50">
+                            	<img src="" width="50" height="50" />
+                            </td>
+                            <td>
+                            	<h3><a href="#">title</a></h3>
+								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur <a href="#">more...</a></p>
+                            </td>                        
+                        </tr>
+                        <tr>
+							<td class="w-50">
+                            	<img src="" width="50" height="50" />
+                            </td>
+                            <td>
+                            	<h3><a href="#">title</a></h3>
+								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur <a href="#">more...</a></p>
+                            </td>                        
+                        </tr>
+
+                    </table>
+                </div>
+				<div class="width63 fr p_all-4 rounded bg_nearblack" >
+                	<div class="fl width50 mt-8">
+                    	<div class="feature-block">
+                        	<h2>DATA</h2>
+                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
+                            <img src="{{ MEDIA_URL }}images/sql_icon.png" alt=""  />
+                    	</div>
+                        <div class="feature-block">
+                        	<h2>DOM</h2>
+                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
+                            <img src="{{ MEDIA_URL }}images/dom_icon.png" alt="" />
+                        </div>
+                        <div class="feature-block">
+                        	<h2>SECURE</h2>
+                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
+                            <img src="{{ MEDIA_URL }}images/lock_icon.png" alt=""  />
+                        </div>
+                    </div>
+                	<div class="fr width50 mt-8">
+                    	<div class="feature-block">
+                        	<h2>UNIFIED</h2>
+                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
+                            <img src="{{ MEDIA_URL }}images/roundtrip_icon.png" alt=""  />
+                        </div>
+                        <div class="feature-block">
+                        	<h2>DESCRIPTOR</h2>
+                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
+                            <img src="" alt="" height="44" width="44" />
+                        </div>
+                        <div class="feature-block">
+                        	<h2>DESCRIPTOR</h2>
+                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
+                            <img src="" alt="" height="44" width="44" />
+                        </div>
+                    </div>                    
+                </div>
+				<br class="clearfloat" />
+			</div>
+		</div>
+{% endblock %}
+{% block extrascripts %}
+<script type="text/javascript">
+	window.addEvent('domready', function () {
+		var slidePanel = new UI.ScrollPanel();
+	});
+</script>
+{% endblock %}
