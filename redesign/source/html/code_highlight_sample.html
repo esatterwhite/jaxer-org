@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>Untitled Document</title>
+		<style type="text/css">
+			html,body, pre{padding:0; margin:0;}
+		</style>
+		<script src="../js/mootools-1.2.4-core.js"></script>
+		<script src="../js/lighter/Lighter.js"></script>
+	</head>
+	<body>
+		
+		<pre class="js:twilight">
+MooEditable.Actions.h2 = {
+	title:'H2',
+	type:'button',
+	options:{
+		mode:'icon'
+	},
+	command: function(name){
+		var argument = '<' + name.name + '>';
+		this.focus();
+		this.execute('formatBlock', false, argument);
+	}
+};
+MooEditable.Actions.h4 = {
+	title: 'H4',
+	type: 'button',
+	options: {
+		mode: 'icon'
+	},
+	command: function(name){
+		var argument = '<' + name.name + '>';
+		this.focus();
+		this.execute('formatBlock', false, argument);
+	}
+};		</pre>
+		<pre class="js:git">
+MooEditable.Actions.h2 = {
+	title:'H2',
+	type:'button',
+	options:{
+		mode:'icon'
+	},
+	command: function(name){
+		var argument = '<' + name.name + '>';
+		this.focus();
+		this.execute('formatBlock', false, argument);
+	}
+};
+MooEditable.Actions.h4 = {
+	title: 'H4',
+	type: 'button',
+	options: {
+		mode: 'icon'
+	},
+	command: function(name){
+		var argument = '<' + name.name + '>';
+		this.focus();
+		this.execute('formatBlock', false, argument);
+	}
+};		</pre>
+		<script type="text/javascript">
+			window.addEvent('domready',function(){
+//				var myLighter = new Lighter('code', {
+//					altLines: "hover",
+//					mode: 'ol'
+//				});
+				$$('pre').light({ 
+					altLines: "hover",
+					mode:'ol'
+				});
+			});
+		</script>
+	</body>
+</html>

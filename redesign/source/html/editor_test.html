@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>Untitled Document</title>
+		<link href="../css/reset.css" rel="stylesheet" type="text/css" />
+		<link href="../css/jaxer_base.css" rel="stylesheet" type="text/css" />		
+		<link href="../js/mooeditable/Assets/MooEditable/MooEditable.css" type="text/css" media="screen" rel="stylesheet"/>
+		<link href="../js/mooeditable/Assets/MooEditable/MooEditable.Extras.css" type="text/css" media="screen" rel="stylesheet"/>
+		<link href="../js/mooeditable/Assets/MooEditable/MooEditable.Image.css" type="text/css" media="screen" rel="stylesheet"/>
+	</head>
+	<body>
+		<textarea id="area1" rows="20" style="width:700px;">Hello World</textarea>
+		
+		<script type="text/javascript" src="../js/mootools-1.2.4-core.js" ></script>
+		<script type="text/javascript" src="../js/mootools-1.2.4.2-more.js"></script>
+		<script type="text/javascript" src="../js/mooeditable/Source/MooEditable/MooEditable.js"></script>
+		<script type="text/javascript" src="../js/mooeditable/Source/MooEditable/MooEditable.Extras.js"></script>
+		<script type="text/javascript" src="../js/mooeditable/Source/MooEditable/MooEditable.Image.js"></script>
+		<script type="text/javascript" src="../js/lighter/Lighter.js"></script>
+		<script type="text/javascript" src="../js/base-debug.js"></script>
+		<script type="text/javascript" >
+			window.addEvent('domready',function(){
+				var moo = $('area1').mooEditable({
+					actions:"h2 h4 p | bold italic | insertunorderedlist indent outdent | undo redo | createlink unlink | image | insertcode toggleview",
+					externalCSS:"../../../redesign/source/css/jaxerRTE.css"
+				});
+				MooEditable.Actions.p = {
+					title:'Paragragh',
+					type:'button',
+					options: {
+						states: {
+							tags: ['p']
+						},
+						mode:'icon'
+					},
+					command: function(name){
+						var argument = '<' + name.name + '>';
+						this.focus();
+						this.execute('formatBlock', false, argument);
+					}
+				};
+				MooEditable.Actions.h2 = {
+					title:'H2',
+					type:'button',
+					options:{
+						mode:'icon'
+					},
+					command: function(name){
+						var argument = '<' + name.name + '>';
+						this.focus();
+						this.execute('formatBlock', false, argument);
+					}
+				};
+
+				MooEditable.Actions.h4 = {
+					title: 'H4',
+					type: 'button',
+					options: {
+						mode: 'icon'
+					},
+					command: function(name){
+						var argument = '<' + name.name + '>';
+						this.focus();
+						this.execute('formatBlock', false, argument);
+					}
+				};
+				MooEditable.Actions.insertcode={
+					title:"Insert Code",
+					type:"button",
+					options:{
+						mode:'icon',
+						shotcut:'q'
+					},
+					states:{
+						tags:['pre']
+					},
+					command:function(button, e){
+						var codeBox = new utils.LaunchPad();
+						codeBox.showBox({
+							titleBar:"Insert Code",
+							stage:'',
+							closeable:false
+						});
+						var clipboard = new Element('textarea',{
+							styles:{
+								width:300,
+								height:300,
+								background:'#222',
+								color:'#CCC'
+							}
+						});
+                        var cb = new Element('a', {
+                            href: '#',
+                            text: "clickme",
+                            events: {
+                                click: function(e){
+                                    var node, content;
+                                    if (clipboard.value !== "") {
+                                        obj = {text: clipboard.value};
+                                        node = "<pre class='js:twilight'>{text}</pre>".substitute(obj) ;                                    
+                                        moo.selection.insertContent(node);
+                                    }
+                                    codeBox.hideBox();
+                                }
+                            }
+                        });
+						clipboard.inject('stage');
+						cb.inject('stage');
+					}
+				};
+			})
+		</script>
+	</body>
+</html>

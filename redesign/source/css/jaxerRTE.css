@@ -1,0 +1,9 @@
+html{background:#0D0D0D}
+body { background:#0D0D0D; font-size:small; color:#FFF; font-family:"Trebuchet MS", Arial, Helvetica, sans-serif }
+a{text-decoration:none; color:#69F;}
+a:hover{color:#FFF !important;}
+h2{color:#FFF; font-size:20px; font-weight:bold;}
+h4{font-size:16px; font-weight:bold; color:#14A554; border-bottom:1px solid #333; margin-bottom:4px;}
+pre{font-family:monospace, Helvetica, Courier, sans-serif; font-size:x-small; color:#999; }
+.quote, blockquote{background:transparent url(img/quote-close.png) no-repeat scroll right bottom; font-weight:bold; font-style:italic; color:#FFF; font-size:.8em; padding:6px; background-color:#181818; border:#333 solid 1px; margin:5px 50px; }
+.quote p:first-child, blockquote p:first-child{background:transparent url(img/quote-start.png) no-repeat scroll left top; padding:0 0 10px 30px; }
