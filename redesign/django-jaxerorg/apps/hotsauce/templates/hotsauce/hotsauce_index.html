@@ -1,0 +1,17 @@
+{% extends "centered_page.html" %}
+{% load saucefilters %}
+{% block Slab %}
+<ul>
+{% for object in object_list %}
+	<li>
+		{{ object.title|title }} ( <a href="{% url hotsauce_wiki_edit item=object, obj_id=object.id %}">{{ object.latest_changeset }}</a> )
+		<ul>
+			{% for change in object.changes.all %}
+			<li><a href="{% url hotsauce_change_view item=object, obj_id=change.id %}">{{ change }}</a></li>
+			{% endfor %}
+		</ul>	
+	</li>
+	
+{% endfor %}
+</ul>
+{% endblock %}
