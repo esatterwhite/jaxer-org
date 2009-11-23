@@ -12,30 +12,33 @@ import xapian
 import djapian
 
 djapian.load_indexes()
-
-
 def ajax_doc_search(request):
-    import pdb
-    pdb.set_trace()
-    if request.POST:
-        try:
-            search = request.POST['q']
-            if " " in search:
-                search = search.replace(" ", " OR ")
-            flags= xapian.QueryParser.FLAG_PARTIAL|xapian.QueryParser.FLAG_WILDCARD \
-                |xapian.QueryParser.FLAG_BOOLEAN |xapian.QueryParser.FLAG_PHRASE
-            indexers = [ClassItem.indexer, JaxerNameSpace.ns_indexer]
-            comp = CompositeIndexer(*indexers)
-            res = comp.search(search).flags(flags)
-            rlist = [dict(name=x.instance.__unicode__(), 
-                          ct=x.instance.get_ct_id(),
-                          client=bool(x.instance.client_side),
-                          server=bool(x.instance.server_side),
-                          classname=x.instance.get_class_name()) for x in res]
-            return HttpResponse(simplejson.dumps(rlist), 
-                            mimetype='text/javascript')
-        except:
-            return HttpResponseBadRequest()
+    if request.is_ajax():       
+        if request.POST:
+            try:
+                search = request.POST['q']
+                if " " in search:
+                    search = search.replace(" ", " OR ")
+                flags= xapian.QueryParser.FLAG_PARTIAL|xapian.QueryParser.FLAG_WILDCARD \
+                    |xapian.QueryParser.FLAG_BOOLEAN |xapian.QueryParser.FLAG_PHRASE
+                indexers = [ClassItem.indexer, JaxerNameSpace.ns_indexer]
+                comp = CompositeIndexer(*indexers)
+                res = comp.search(search).flags(flags)
+                rlist = [dict(name=x.instance.__unicode__(), 
+                              ct=x.instance.get_ct_id(),
+                              client=bool(x.instance.client_side),
+                              server=bool(x.instance.server_side),
+                              classname=x.instance.get_class_name()) for x in res]
+                return HttpResponse(simplejson.dumps(rlist), 
+                                mimetype='text/javascript')
+            except:
+                return HttpResponseBadRequest()
+        else:
+            return HttpResponse(simplejson.dumps({'error':True}))
+    else:
+        # can probably change to redirect to a search
+        # page view as well
+        return HttpResponseBadRequest()
 
 def document_detail(request, oslug, ctid, objid, template_name=None):
     type = ContentType.objects.get(pk=ctid)
