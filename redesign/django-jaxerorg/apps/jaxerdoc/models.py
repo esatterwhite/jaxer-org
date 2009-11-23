@@ -2,14 +2,16 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from jaxerdoc.managers import Manager, NaitiveObjectManager, CustomObjectManager, GlobalFunctionManager
+
 from django.db.models import Q
+from django.db.models import permalink
 from jaxerorg.core.models import JaxerRelease
 from jaxerhotsauce.models import ChangeSet
 from django.contrib.auth.models import User
 from diff_match_patch.diff_match_patch import diff_match_patch
+from jaxerdoc.managers import Manager, NaitiveObjectManager, CustomObjectManager, GlobalFunctionManager
 # generic - can go on anything
-
+import pdb
 
 class SelfAwareModel(models.Model):
     '''
@@ -42,7 +44,7 @@ class SelfAwareModel(models.Model):
         return self.get_ct().model
     
     def get_class_name(self):
-        return self.__class__.__name__
+        return self._meta.verbose_name
         
     class Meta:
         abstract = True    
@@ -54,14 +56,16 @@ class StandardDocumentModel(SelfAwareModel):
     '''
     editor =         models.ForeignKey(User)
     name =           models.CharField(_('Name'), max_length=40, blank=False, unique=True)
-    content =        models.TextField(_('Description'), blank=False)
+    slug =           models.CharField(max_length=255, editable=False)          
+    content =        models.TextField(_('Content'), blank=False,
+                                      help_text='This will be main content for the document page')
     
     # Saved content comes in as HTML text, but we don't want to index html
     # text. When saved, html tags will be stripped and a diference patch will
     # be saved.
     #
     # content the plain text is then saved and indexed by Xapian.
-    html_patch =     models.TextField(blank=True, editable=False)
+    html_patch =     models.TextField(blank=True, null=True, editable=False)
     
     
     client_side =    models.BooleanField()
@@ -127,24 +131,36 @@ class StandardDocumentModel(SelfAwareModel):
             save the plain text, save the patch as text string
             save the object 
         '''
+        pdb.set_trace()
         from django.template.defaultfilters import striptags
         DMP = diff_match_patch()
         html = self.content
         plain_text = striptags(html)
         
         if self.content == plain_text:
-            return True
+            self.html_patch = None
         else:
             patch = DMP.patch_make(plain_text, html)
             self.content = plain_text
             self.html_patch = DMP.patch_toText(patch)
-            self.save()
              
     def get_html_content(self):
-        DMP = diff_match_patch()
-        patch = DMP.patch_fromText(self.html_patch)
-        return DMP.patch_apply(patch, self.content)[0]
-    
+        if self.html_patch is None:
+            return self.content
+        else:
+            DMP = diff_match_patch()
+            patch = DMP.patch_fromText(self.html_patch)
+            return DMP.patch_apply(patch, self.content)[0]
+    def save(self, force_insert=False, force_update=False):
+        try:
+            self.slug = self.__unicode__().replace('.','-')
+        except:
+            from django.template.defaultfilters import slugify
+            self.slug = slugify(self.name)
+        self.make_indexable()
+        
+        super(StandardDocumentModel,self).save(force_insert, force_update)
+        
     class Meta:
         abstract = True
 class JaxerCodeSnippet(SelfAwareModel):
@@ -283,8 +299,10 @@ class JaxerNameSpace(JavascriptObject):
         verbose_name = "Namespace"
         
     def __unicode__(self):
-        return self.name
-
+        if self.parent_namespace is not None:
+            return ".".join([self.parent_namespace.name, self.name])
+        else:
+            return "%s" % self.name
         
 class ClassItem(Function):
     
@@ -306,11 +324,14 @@ class ClassItem(Function):
         return ".".join([self.namespace.parent_namespace.name,self.namespace.name, self.name])   
     def class_name(self):
         return self.__unicode__()
+    
     def type(self):
-        return "%s Instance" % self.__unicode__()
-    def save(self, force_insert=False, force_update=False):
-        self.make_indexable()
-        super(ClassItem, self).save(force_insert, force_update)
+        return "%s Instance" % self.__unicode__()        
+    @permalink
+    def get_absolute_url(self):
+        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug,
+                                                        'ctid':self.get_ct_id(),
+                                                        'objid':self.id})
     class Meta:
         verbose_name = 'Class'
         verbose_name_plural = 'Classes'
