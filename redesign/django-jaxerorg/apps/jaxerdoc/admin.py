@@ -5,19 +5,19 @@ from django.contrib.contenttypes import generic
 class AdminMethodInline(generic.GenericStackedInline):
     model = Function
     fieldsets=(
-        (None,{'fields': ('name',)}),
+        (None,{'fields': ('name','editor')}),
         ('Information',{
                         'fields':('content',),
                         'classes':('collapse', )
                         }
         ),
-        ('Returns',{
-                    'fields':('return_param',('return_type','type_id')),
-                    'classes':('collapse', )
-                    }
-        ),
+#        ('Returns',{
+#                    'fields':('return_param',('return_type','type_id')),
+#                    'classes':('collapse', )
+#                    }
+#        ),
         ('Availability',{
-                      'fields':('is_depricated',('client_side', 'server_side'))
+                      'fields':(('availablity','is_depricated'),('client_side', 'server_side'))
                       }
         ),
     )
@@ -26,12 +26,24 @@ class AdminPropertyInline(generic.GenericStackedInline):
     list_display = ('content_type', 'object_id')
 class AdminParameterInline(generic.GenericStackedInline):
     model = Parameter
-
+class AdminJavascriptObjectInline(generic.GenericStackedInline):
+    model = JavascriptObject
 #modeladmin definitions
 class AdminJavaScriptObject(admin.ModelAdmin):
     inlines = [AdminMethodInline, AdminPropertyInline ]
     list_display = ('name', 'id')
-    
+    list_filter = ('naitive',)
+    fieldsets = (
+                 (None,{
+                       'fields':('editor',('name','naitive'),'content')
+                       }
+                 ),
+                 
+                 ('Framework',{
+                               'fields':('server_side','client_side')
+                               }
+                 )
+                )
 class AdminClassItem(admin.ModelAdmin):
     inlines = [AdminParameterInline, AdminMethodInline, AdminPropertyInline ]
     list_display = ('class_name','id')
@@ -49,22 +61,34 @@ class AdminClassItem(admin.ModelAdmin):
                           'fields':('availablity',('is_depricated','depricated'))
                           }
          ),
-         ('Return',
-            {
-             'fields':('return_param', ('return_type', 'type_id'),),
-             
-             }
-          )
+         ('Framework',{
+                          'fields':('client_side','server_side')
+                          }
+         ),
+#         ('Return',
+#            {
+#             'fields':('return_param', ('return_type', 'type_id'),),
+#             
+#             }
+#          )
     )
     
 class AdminJaxerNameSpace(admin.ModelAdmin):
+    list_display=('name', 'id')
+    inlines = [AdminParameterInline, AdminMethodInline, AdminPropertyInline ]
     exclude = ['naitive']    
 class AdminFunctionModel(admin.ModelAdmin):
-    list_display= ('name', 'return_param')
+    inlines = [AdminParameterInline, AdminJavascriptObjectInline]
+    list_display= ('name',)
     fieldsets=(
-        (None,{'fields': ('name',)}),
-        ('Information',{'fields':('content','is_global')}),
-        ('Returns',{'fields':('return_param',('return_type','type_id'))}),
+        (None,{'fields': ('editor',)}),
+        ('Information',{'fields':('name',('content','is_global','example_code'))}),
+        ('Link To',{'fields':('content_type','object_id')}),
+        ('Availability',{
+                      'fields':('availablity', ('is_depricated','depricated'),('client_side', 'server_side'))
+                      }
+        ),
+        
     )
 class AdminParameterModel(admin.ModelAdmin):
     inlines = [ AdminPropertyInline ]

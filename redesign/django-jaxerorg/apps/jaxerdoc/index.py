@@ -9,22 +9,24 @@ from jaxerdoc.models import ClassItem, JavascriptObject, JaxerNameSpace
 # [x.__dict__ for x in r.all()]
 
 class JSObjectIndexer(Indexer):
-    fields = ['name', 'content']
+    fields = ['name', 'content', 'search_name']
     tags = [
         ('name','name'),
         ('content','content')
     ]
 class ClassItemIndexer(Indexer):
-    fields = ['name', 'content']
+    fields = ['name', 'content', 'search_name']
     tags = [
         ('name','name'),
-        ('content','content')
+        ('content','content'),
+        ('search_name', 'search_name')
     ]
 class JaxerNameSpaceIndexer(Indexer):
-    fields = ['name', 'content']
+    fields = ['name', 'content', 'search_name']
     tags = [
         ('name','name'),
-        ('content','content')
+        ('content','content'),
+        ('search_name', 'search_name')
     ]
 space.add_index(JavascriptObject, JSObjectIndexer, attach_as='indexer')
 space.add_index(ClassItem, ClassItemIndexer, attach_as='indexer')

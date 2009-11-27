@@ -10,9 +10,12 @@ from jaxerhotsauce.models import ChangeSet
 from django.contrib.auth.models import User
 from diff_match_patch.diff_match_patch import diff_match_patch
 from jaxerdoc.managers import Manager, NaitiveObjectManager, CustomObjectManager, GlobalFunctionManager
+import datetime
 # generic - can go on anything
-import pdb
-
+jsobjects =       Q(model__iexact='javascriptobject')
+jsfunction =      Q(model__iexact='function')
+jsclass =         Q(model__iexact='classitem')
+jsnamespace =     Q(model__iexact='jaxernamespace')
 class SelfAwareModel(models.Model):
     '''
         An Abstract model: models which subclass the SelfAwareModel
@@ -59,7 +62,7 @@ class StandardDocumentModel(SelfAwareModel):
     slug =           models.CharField(max_length=255, editable=False)          
     content =        models.TextField(_('Content'), blank=False,
                                       help_text='This will be main content for the document page')
-    
+    date_modified =  models.DateTimeField(default=datetime.datetime.now(), auto_now=True, editable=False)
     # Saved content comes in as HTML text, but we don't want to index html
     # text. When saved, html tags will be stripped and a diference patch will
     # be saved.
@@ -131,15 +134,12 @@ class StandardDocumentModel(SelfAwareModel):
             save the plain text, save the patch as text string
             save the object 
         '''
-        pdb.set_trace()
         from django.template.defaultfilters import striptags
         DMP = diff_match_patch()
         html = self.content
         plain_text = striptags(html)
         
-        if self.content == plain_text:
-            self.html_patch = None
-        else:
+        if not self.content == plain_text:
             patch = DMP.patch_make(plain_text, html)
             self.content = plain_text
             self.html_patch = DMP.patch_toText(patch)
@@ -196,9 +196,6 @@ class Parameter(StandardDocumentModel):
         they can be any javascript object or a Function
     '''
     #for ease of use
-    jsobjects =       Q(model__iexact='javascriptobject')
-    jsfunction =      Q(model__iexact='function')
-    jsclass =         Q(model__iexact='classitem')
     
     # the type of parameter a function expects can
     # be just about anything
@@ -216,7 +213,6 @@ class Parameter(StandardDocumentModel):
                                      limit_choices_to=Q(jsobjects|jsfunction|jsclass))
     object_id =       models.PositiveIntegerField(blank=True, null=True)    
     function_object = generic.GenericForeignKey('content_type', 'object_id')
-    
     def __unicode__(self):
         return self.name
 class Function(StandardDocumentModel):
@@ -227,8 +223,8 @@ class Function(StandardDocumentModel):
         Functions do not need to be attached to another object. In this
         case they would be considered global functions
     '''
-    example_code =   models.TextField()
-    availablity =    models.ForeignKey(JaxerRelease, blank=True, null=False,
+    example_code =   models.TextField(blank=True, null=True)
+    availablity =    models.ForeignKey(JaxerRelease, blank=True, null=True,
                                        related_name="available_in")
     
     is_depricated =  models.BooleanField()
@@ -253,19 +249,16 @@ class Function(StandardDocumentModel):
     
     type_id =       models.PositiveIntegerField(_("Object's ID"), blank=True, null=True)
     return_object = generic.GenericForeignKey('return_type','type_id') 
-    
+    returns =       generic.GenericRelation('JavascriptObject')
     # parameters which make up the function signature
     parameters =    generic.GenericRelation(Parameter)
-    admin_objects = GlobalFunctionManager()
-    objects =       Manager()
+    admin_objects = Manager()
+    objects =       GlobalFunctionManager()
     def __unicode__(self):
         return '%s' % self.name
 
-    def get_return_type(self):
-        if self.return_type is None:
-            return 'void'
-        else:
-            return '%s' % self.return_type
+    def get_return_vars(self):
+        pass
     class Meta:
         verbose_name = "Function"   
         
@@ -275,11 +268,20 @@ class JavascriptObject(StandardDocumentModel):
         Representation of the JavaScript Object
         Naitive objects would be Array, String
     '''
+    # the generic relation of the object is primarily for functions that return more than 1 object
+    content_type =   models.ForeignKey(ContentType, blank=True, null=True, related_name='returnobject_set')
+    object_id =      models.PositiveIntegerField(blank=True, null=True)    
+    content_object = generic.GenericForeignKey('content_type', 'content_object')
+
+    #for use with inline models only
+    ret_obj_type =    models.ForeignKey(ContentType, blank=True, null=True, related_name='returntype_set',limit_choices_to=Q(jsobjects|jsclass|jsnamespace))
+    ret_obj_id =      models.PositiveIntegerField(blank=True, null=True)    
+    ret_object =      generic.GenericForeignKey('ret_obj_type', 'ret_obj_id')
 
     naitive =          models.BooleanField(help_text=_('Is this a naitive JS Object?'))
     properties =       generic.GenericRelation(Property)
     methods =          generic.GenericRelation(Function)     
-    admin_objects =    NaitiveObjectManager()
+#    admin_objects =    NaitiveObjectManager()
     objects =          Manager()
     
     class Meta:
@@ -288,22 +290,41 @@ class JavascriptObject(StandardDocumentModel):
         return self.name
     def type(self):
         return "Object"
+    def has_properties(self):
+        return self.properties.count() > 0
+    def has_methods(self):
+        return self.methods > 0
     
 class JaxerNameSpace(JavascriptObject):
     #this is a subclass used to organize Jaxer's Namespace Objects
     #apart from the Standard javascript Objects(String, Array, etc)
+    root_namespace =   models.ForeignKey('self', blank=True, null=True, related_name='rootnamespace')
     parent_namespace = models.ForeignKey('self', blank=True, null=True)
+    search_name =      models.CharField(max_length=150, editable=False, blank=True)
     objects =          CustomObjectManager()
+    availablity =      models.ForeignKey(JaxerRelease, blank=True, null=True,
+                                       related_name="available_in")
+    
+    is_depricated =  models.BooleanField()
+    depricated =     models.ForeignKey(JaxerRelease,blank=True, null=True,
+                                        related_name="deripacted_in")
     
     class Meta:
         verbose_name = "Namespace"
         
     def __unicode__(self):
-        if self.parent_namespace is not None:
+        if self.root_namespace and self.parent_namespace :
+            return ".".join([self.root_namespace.name,self.parent_namespace.name, self.name])
+        elif self.root_namespace is None and self.parent_namespace is not None:
             return ".".join([self.parent_namespace.name, self.name])
+        elif self.root_namespace is not None and self.parent_namespace is None:
+            return ".".join([self.root_namespace.name, self.name])
         else:
             return "%s" % self.name
+    def save(self, force_insert=False, force_update=False):
+        self.search_name=self.__unicode__()
         
+        super(JaxerNameSpace, self).save(force_insert, force_update)
 class ClassItem(Function):
     
     '''
@@ -319,12 +340,11 @@ class ClassItem(Function):
        
     properties =  generic.GenericRelation(Property, 
                                           related_name='classproperites')
-
+    search_name =     models.CharField(max_length=150, editable=False, blank=True)
     def __unicode__(self):
-        return ".".join([self.namespace.parent_namespace.name,self.namespace.name, self.name])   
+        return ".".join([self.namespace.__unicode__(), self.name])   
     def class_name(self):
         return self.__unicode__()
-    
     def type(self):
         return "%s Instance" % self.__unicode__()        
     @permalink
@@ -332,6 +352,12 @@ class ClassItem(Function):
         return('jaxerdoc.views.document_detail', (), {'oslug':self.slug,
                                                         'ctid':self.get_ct_id(),
                                                         'objid':self.id})
+        
+    def save(self, force_insert=False, force_update=False):
+        self.search_name=self.__unicode__()
+        
+        super(ClassItem, self).save(force_insert, force_update)
+
     class Meta:
         verbose_name = 'Class'
         verbose_name_plural = 'Classes'
