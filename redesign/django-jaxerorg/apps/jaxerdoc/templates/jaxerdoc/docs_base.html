@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block scripts %}
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/lighter/Lighter.js" ></script>
+{% endblock %}
+{% block content %}
+        <div id="main">
+            <div class="pt-12">
+                <div class="pt-10 mt-10">
+                    <div class="width33 fl mr-6 p_all-4 rounded bg_nearblack" id="main-sidebar">
+                        {% block sidebar %}{% endblock %}
+                    </div>
+                    <!-- START MAIN-CONTENT -->
+					<a name="top" id="top"></a>
+                    <div class="width63 fr p_all-6 rounded bg_nearblack" id="main-content">
+                        <div class="bg-light p_all-6 m_all-2 border-med">
+                            <h1>{% block docheading %}{% endblock %}</h1>
+                        </div>
+                        <div class="p_all-4 ml-4 small">
+                            <span class="fl">{% block subheading-left %}{% endblock %}</span>
+                            <span class="fr">{% block subheading-right%}{% endblock %}</span>
+                            <br class="clearfloat" />
+                        </div>
+                        <div class="bg-light border-med p_all-8 m_all-2" id="slab">
+                            <div class="mb-6">
+                                <span class="fl comment">{% block type %}{% endblock %}</span>
+                                <span class="fr">
+                                    <form action="" method="post">
+                                        <input type="text" class="width-200px" id="doc-search">
+                                        </input><img class="ml-10" src="{{ MEDIA_URL }}images/zoom.png" galleryimg="true"/>
+                                    </form>
+                                </span>
+                                <br class="clearfloat" />
+                                <div class="mt-6">
+                                    {% block docbody %}{% endblock %} 
+                                </div>
+                            </div>
+                            <a href="#top" class="small">top</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- END MAIN CONTENT -->
+            </div>
+            <br class="clearfloat" />
+        </div>
+		<script type="text/javascript">
+			window.addEvent('domready', function(){
+				$$('pre').light({ 
+					altLines: "hover",
+					mode:'ol',
+					indent:3
+				});
+				var scroller = new Fx.SmoothScroll();
+				var tokens = ['Jaxer.Util.Math', 'Jaxer.Util', 'Jaxer.Util.DOM', 'Jaxer.Util.String', 'Jaxer.Util.Date'];
+				new Autocompleter.Request.JSON('doc-search', {% url jaxerdoc_ajax_search %}, {
+					'minLength': 1, // We need at least 1 character
+					'selectMode': 'type-ahead', // Instant completion
+					'postVar': 'searchVal',
+					'tokens': null,
+					'filterSubset':true,
+					 'injectChoice': function(token){
+			            var choice = new Element('li');
+			            new Element('div', {
+			                'html': this.markQueryValue(token.name)
+			            }).inject(choice);
+						new Element('span',{
+							'html':token.ct,
+							'class':'small fl'
+						}).inject(choice);
+						new Element('span',{
+							'html':"<span class='{client}'>client</span>|<span class='{server}'>sever</span>".substitute(token),
+							'class':'fr compact-text'
+						}).inject(choice);
+						new Element('br',{
+							'class':'clearfloat'
+						}).inject(choice);
+			            this.addChoiceEvents(choice).inject(this.choices)
+			        }
+				});
+			});
+		</script>	
+{% endblock %}
+{% block extrascripts %}{% endblock %}
