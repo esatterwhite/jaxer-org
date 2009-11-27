@@ -5,11 +5,8 @@
 		<title>{% block title %}{% endblock %}</title>
 			<link href="{{ MEDIA_URL }}css/reset.css" rel="stylesheet" media="screen" />
 			<link href="{{ MEDIA_URL }}css/jaxer_base.css" rel="stylesheet" media="screen" />
-
 		{% block stylesheets %}{% endblock %}
 		<script type="text/javascript" src="{{ MEDIA_URL }}js/mootools-1.2.4-core.js" ></script>
-		<script type="text/javascript" src="{{ MEDIA_URL }}js/mootools-1.2.4.2-more.js"></script>
-		<script type="text/javascript" src="{{ MEDIA_URL }}js/base-debug.js"></script>		
 		{% block scripts %}{% endblock %}
 	</head>
 	<body>
@@ -89,18 +86,18 @@
 	                </ul>
 	            </div>
 	            <br class="clearfloat" />
-	            <div id="bottom-bar">
-	            	<span class="fr p_all-4">
-	                	<ul>
-	                        <li>Aptana Network:</li>
-	                    	<li><a href="#">aptana.org</a></li>
-	                        <li><a href="#">radrails.org</a></li>
-	                        <li><a href="#">activerecordjs.org</a></li>
-	                    </ul>
-	                </span>
-	                <br class="clearfloat" />
-	            </div>
+            <div id="bottom-bar">
+            	<div class="">
+                    Aptana Network:
+                	<a href="#">aptana.org</a>
+                    <a href="#">radrails.org</a>
+                   <a href="#">activerecordjs.org</a>
+                </div>                 
+            </div>
 		</div>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/mootools-1.2.4.2-more.js"></script>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/autocompleter.js"></script>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/base-debug.js"></script>				
 		{% block extrascripts %}{% endblock %}
 	</body>
 </html>

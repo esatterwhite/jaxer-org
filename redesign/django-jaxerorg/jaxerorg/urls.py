@@ -23,8 +23,16 @@ urlpatterns = patterns('',
         {'document_root': settings.STATIC_DOC_ROOT,'show_indexes': True}),
     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#
      url(r'^$', 'jaxerorg.core.views.jaxer_home', name='jaxerorg_core_home'),                     
-    url(r'^escape/$', 'jaxerorg.core.views.escape_code', name='jaxerorg_core_escapecode'),
+     url(r'^escape/$', 'jaxerorg.core.views.escape_code', name='jaxerorg_core_escapecode'),
 )
 urlpatterns += patterns('',
     url(r'^core/', include('jaxerorg.core.urls')),                        
+)
+
+urlpatterns += patterns('jaxerdoc.views',
+    url(r'^search/', 'ajax_doc_search', name='jaxerdoc_ajax_search'),
+                        
+)
+urlpatterns += patterns('jaxerdoc.views',
+    url(r'^api/', include('jaxerdoc.urls')),
 )
