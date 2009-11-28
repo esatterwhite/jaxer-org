@@ -1,7 +1,7 @@
 '''Wiki admin config'''
 from django.contrib import admin
 from django.contrib.contenttypes import generic
-from hotsauce.models import ChangeSet, WikiPage
+from jaxerhotsauce.models import ChangeSet, WikiPage
 
 class InlineChangeSet(generic.GenericTabularInline):
     '''generic inline confige of the ChangeSet'''

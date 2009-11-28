@@ -30,12 +30,14 @@ class ChangeSet(models.Model):
     editor =         models.ForeignKey(User, limit_choices_to={'is_staff':True})
     revision =       models.PositiveIntegerField()   
     comment =        models.CharField(max_length=255, blank=True)
-    content_diff =    models.TextField('Content Patch', editable=False, blank=True)
+    content_diff =   models.TextField('Content Patch', editable=False, blank=True)
     date_modified =  models.DateTimeField(default = datetime.now(), blank=False)
-    old_title =      models.CharField("Title", max_length = 255, blank = True)
+    old_name =      models.CharField("Name", max_length = 255, blank = True)
+    
+    approve_change = models.BooleanField()
+    deny_change =    models.BooleanField()
     
     objects =        Manager()
-    
     class Meta:
         ordering = ('-revision', )
         get_latest_by = 'date_modified'
@@ -74,11 +76,21 @@ class ChangeSet(models.Model):
         
         editable_object.body = content
         editable_object.save()
-        
         editable_object.make_new_revision(old_content, 
                                           old_title, 
                                           comment="Reverted to revision %s" % self.revision, 
                                           editor=editor)
+    def apply_queued_diff(self, cs):
+        patch_text = cs.content_diff
+        patch = DMP.patch_fromText()
+        new_version = DMP.patch_apply(patch, patch_text)
+        self.content_object.description = new_version
+        try:
+            self.revision = ChangeSet.objects.filter(content_type=self.content_type, object_id = self.content_object.id).latest().revision +1
+        except:
+            self.revision = 1
+        self.save()
+        self.content_object.save()
     def display_change_html(self):
         ''' return the html string of a changeset'''
         old_content = self.content_object.content
@@ -102,6 +114,11 @@ class ChangeSet(models.Model):
         except:
             self.revision = 1
         super(ChangeSet, self).save(force_insert, force_update)
+
+    
+    content_type = models.ForeignKey(ContentType)
+    object_id =    models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey()
 class EditableItem(models.Model):
     ''' 
         base item for wiki. only field is main editable content
@@ -150,7 +167,7 @@ class EditableItem(models.Model):
             This creates a new ChangeSet related to the object that called
             this function
         '''
-        from hotsauce.utils import make_difPatch
+        from jaxerhotsauce.utils import make_difPatch
         diff_text = make_difPatch(self.content, old_content)
         change = ChangeSet.objects.create(content_diff=diff_text, 
                                       content_type=self.content_type, 
@@ -162,10 +179,8 @@ class EditableItem(models.Model):
     
     def get_ct(self):
         ''' returns the ID of this objects ContentType'''
-        app = self.__module__.split('.')[-2]
-        mod = self.__class__.__name__.lower()
-        return ContentType.objects.get(app_label=app, model=mod).id
-        
+        return ContentType.objects.get_for_model(self)
+            
 class WikiPage(EditableItem):
     '''DOCSTRINGS'''
     changes = generic.GenericRelation(ChangeSet)
@@ -179,7 +194,7 @@ class WikiPage(EditableItem):
                           old_title, comment, editor):        
         '''Overridden from EditableItem'''
         ctype = ContentType.objects.get_for_model(self)
-        from hotsauce.utils import make_difPatch
+        from jaxerhotsauce.utils import make_difPatch
         diff_text = make_difPatch(self.content, old_content)
         cset = ChangeSet.objects.create(content_diff=diff_text, 
                                       content_type=ctype, 

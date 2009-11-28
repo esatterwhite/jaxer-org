@@ -1,11 +1,11 @@
 '''        HOTSAUCE VIEWS        '''
 #from django.core.urlresolvers import reverse
 #from hotsauce.models import ChangeSet, WikiPage
-from hotsauce.forms import EditableItemForm
+from jaxerhotsauce.forms import EditableItemForm
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.contrib.auth.decorators import login_required
-from hotsauce.models import WikiPage, ChangeSet
+from jaxerhotsauce.models import WikiPage, ChangeSet
 # Create your views here.
 
 def wiki_list(request):
