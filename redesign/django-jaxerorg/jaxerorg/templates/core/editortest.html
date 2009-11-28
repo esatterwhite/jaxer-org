@@ -13,7 +13,7 @@
 			window.addEvent('domready',function(){
 				var moo = $('area1').mooEditable({
 					actions:"h2 h4 p | bold italic | insertunorderedlist indent outdent | undo redo | createlink unlink | image | insertcode toggleview",
-					externalCSS:"../../..{{ MEDIA_URL }}css/jaxerRTE.css"
+					externalCSS:"{{ MEDIA_URL }}css/jaxerRTE.css"
 				});
 				MooEditable.Actions.p = {
 					title:'Paragragh',
