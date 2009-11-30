@@ -8,7 +8,8 @@ utils.Overlay = new Class({
 		isMaskOn: false,
 		loadClass: 'loader',
 		closeable: true,
-		_closeable: null, //object constant set at creation time. aims to 'remember' the option from creation time. exposed to client for use
+		_closeable: null, //object constant set at creation time. aims to 'remember' 
+						 //the option from creation time. exposed to client for use
 		color: '#000',
 		opacity: 0.6,
 		onReveal: $empty,
@@ -131,7 +132,7 @@ utils.LaunchPad = new Class({
 			id: 'modalBox',
 			styles: {
 		        position: 'absolute',
-		        top: yScroll + dim.y / 3, //the users eys tend to reside about 1/3 of the way down.
+		        top: yScroll + 50, //the users eys tend to reside about 1/3 of the way down.
 				padding: '5px',
 				background: '#FF000',
 				'z-index': 700,
@@ -172,7 +173,7 @@ utils.LaunchPad = new Class({
 			closebutton: closebutton
 		});
 		box.inject(document.body);
-		box.setStyle('left', (dim.x / 2) - (box.getSize().x * 2));
+		box.setStyle('left', (dim.x / 2) - (box.getSize().x*2 ));
 		new Drag(box, {
 			handle:titleBar
 		});
@@ -248,10 +249,199 @@ utils.TabToggler = new Class({
     }
 });
 
-utils.AjaxTabToggler = new Class({});
+utils.AjaxTabToggler = new Class({
+	/*
+	 *  Finds <a> tags inside a <div> whose ID starts with 'ajaxtab-'
+	 *  The <a>'s href should be the url which will fetch the data
+	 *  link's view funtion should check for xhr and redirct to a page ( error )
+	 *        to provide feedback and not just do nothing
+	 *  @Stop link propigation
+	 *  @fetch the data
+	 *  @Store Results on tab
+	 *  @
+	 */
+	Implements: [Events, Options, utils.TabToggler],
+//	Extends:HitmenTabToggler,
+	options:{
+		tabs:[], // Holder for the DOM Elements so we don't have to traverse the DOM on every click.
+		container:'stats-container', //a DOM element where the results will be placed
+		
+	},
+    initialize: function(){
+        var t = $$('div a[id^="ajaxtab-"]');
+		this.setOptions({
+			tabs: t
+		});
+	    this.options.tabs.each(function(tab){
+	        tab.addEvent('click', function(e){
+				var anE = e.stop();
+	         	this.tabClick(tab)
+	      	}.bind(this))
+    	}.bind(this));
+		this.tabShow(this.options.tabs[0],true);
+		this.tabClick(this.options.tabs[0]);
+    },
+    tabShow: function(currentTab, shouldShow){
+        if (shouldShow === true) {
+            currentTab.addClass('on');
+        }
+        else {
+            currentTab.removeClass('on');
+        }
+    },
+    getAllTabs: function(tab){
+        var tabParent = tab.parentNode.tagName;
+        if (tabParent == "DIV") {
+            var tabs = tab.parentNode.getElementsByTagName('a');
+            return tabs
+        }
+        tabParent = tabParent.parentNode;
+        return
+    },
+   tabClick: function(tab){
+		/*
+		 * results of the ajax call can be stored in the tab so we dont' need
+		 * to re run the call on every time some click happy fool goes crazy with
+		 * the mouse
+		 * 
+		 * http://mootools.net/blog/2008/01/22/whats-new-in-12-element-storage/
+		 */
+		this.options.tabs.each(function(el){
+			el.removeClass('on');
+		});
+		tab.addClass('on');
+		var url = tab.href;
+		
+		// Proxy to the element which holds the data so we don't have to traverese the DOM so much.
+		var tContainer = $(this.options.container);
+		tContainer.empty();		
+		
+		if (tab.retrieve('content') != null) {
+			// if the tab has content - get it and load it into the container
+			tContainer.setProperty('html',tab.retrieve('content'))
+		}
+		else {
+			// if the tab doesn't have any content, get it from the DB and load the results.
+			var rhtml = new Request.HTML({
+				'method': 'get',
+				'url': url,
+                'onRequest':function(){
+				    var cel = new Element('center');
+                    var loader = new Element('img',{'src':'http://media.muskegohitmen.com/css/img/ajax-loader.gif'});
+                    loader.inject(cel);
+                    cel.inject(tContainer);
+                                },
+				'onSuccess': function(Tree, Elements, HTML, JavaScript){								
+                    tContainer.empty();
+					//tContainer.setProperty('html', HTML);
+					tContainer.adopt(Elements);
+					tab.store('content',tContainer.getProperty('html'))
+					
+				},
+				'onFailure': function(xhrresp){
+				//	console.log('fail');
+				}
+			}).send();
+			
+			//tab.store('content')
+		}
+/*
+        var tabs = this.getAllTabs(tab);
+        $each(tabs, function(id, index){
+            this.tabShow(tabs[index], false)
+        }.bind(this));
+        this.tabShow(tab, true)
+*/
+    },
+    getTabcontentID: function(tabID){
+        return tabID.split('-')[1]
+    }	
+});
 
 //Namespace for common ui controlling classes
 var UI = {};
+UI.EditMode = new Class({
+	Implements:[Options, Events],
+	options:{
+		isEditModeOn:false,
+		editorScriptsLoaded:false,
+		warningBlock:null
+		
+	},
+	initialize:function(options){
+		if(options !== undefined ){
+			this.setOptions(options);
+		}
+		this.build();
+		
+	},
+	build: function(){
+		var block, close_btn, title;
+		block = new Element('div', {
+			id: 'warningBlock',
+			styles:{
+				background: '#b30000',
+				padding: '10px 0px',
+				position: 'fixed',
+				bottom: '0',
+				'z-index': 10000,
+				opacity:0,
+				visibility: 'hidden'
+			}
+		}).addClass('width100').inject(document.body);
+		title = new Element('h1',{
+			'text':"Edit Mode",
+			styles:{
+				'margin-right':'20px',
+				'color':'#000'
+			}
+		});
+		title.addClass('fr');
+		close_btn = new Element('a',{
+			'class':'dark_button',
+			text:'cancel!',
+			events:{
+				'click':function(evt){
+					console.log('click');
+					this.confirmExit();
+				}.bind(this)
+			}
+		}).addClass('fr mt-8 mr-10').inject(block);
+		
+		title.inject(block);
+		this.setOptions({
+			warningBlock: block
+		});
+	},
+	confirmExit:function(){
+		if(confirm("Are you sure you want to exit with out saving??")){
+			this.options.warningBlock.fade('out');
+			this.turnOff.delay(800, this);
+		}		
+	},
+	turnOn:function(){
+		if(!this.options.isEditModeOn){
+			this.setOptions({
+				isEditModeOn:true
+			});
+			this.options.warningBlock.fade('in')
+		} else {
+			return false;
+		}
+	},
+	turnOff:function(){
+		if (this.options.isEditModeOn){
+			this.setOptions({
+				isEditModeOn:false
+			})
+			
+			window.location.reload()
+		} else {
+			return false;
+		}
+	}
+
+})
 UI.ScollPanel = new Class({
 	Implements: [Options, Events],
 	options: {
@@ -300,7 +490,140 @@ UI.ScollPanel = new Class({
 	}
 });
 
+/**
+ * @classDescription: The ContentRevealer class's intended use is to hide additional object
+ * 					  properties until the user wishes to see them.
+ * 
+ * 
+ * @property{String} controller: 	the ID of controlling element used for interaction, words seperated
+ * 					 				by a common seperator where the final word/number is a unique identifier
+ * 
+ * @property{String} element: 		the ID of the corresponding element that will be hidden from veiw
+ * 					 				The id should have the same prefix as the controller element's ID and end with
+ *  				 				the same unique identifier.
+ *  								Controller: 'js-reveal-control-1' Element:'js-reveal-content-'
+ *  
+ *  								The class will look for an element whose id is the concatenation of
+ *  				 				the element property followed by the unique idenifier of the controller.
+ *  
+ *					  				controller = 'js-reveal-control-1
+ *  								element = 'my-content-
+ *  
+ *					  				class finds 'my-content-1'
+ *  
+ *  @property{String} splitter:  	the common seperator used to split the ID names of elements.
+ *  
+ *  @property{String} container:	the DOM node type where the content lives defaults to 'div'
+ *  @property{String} selector :	the class name used by the class to collect DOM nodes to hide
+ *  								 defaults to '.slide'
+ *  
+ *  								The class will join the container and selector to find all of the
+ *  								you wish to controll 
+ *  
+ *  								the default would be 'div.slide'
+ */
+UI.ContentRevealer = new Class({
+	Implements:[Events, Options, Chain],
+	
+	options:{
+		controller:'',
+		element:'js-reveal-content-',
+		_elements:[],
+		container:'div',
+		selector:'.slide',
+		splitter:'-',
+		isClosed:false
+	},
+	/**
+	 * 
+	 * @param {String} The ID of the element used as the button to interact
+	 * 					with the revealable content elements
+	 * @param {Object} The setting options for this class
+	 */
+	initialize:function(control, options){
+		if(options){
+			this.setOptions(options);	
+		}
+		this.options.controller = $(control);
+		
+		this.options._elements = $$(this.options.container+this.options.selector);
+		this.options._elements.each(function(el){
+			el.set('slide',{duration:'long',transition:'quad:out'});
+			el.slide('out');
+			this.setOptions({
+				isClosed:true
+			});
+		}.bind(this));
+		$(this.options.controller).addEvent('click', function(evt){
+			var elementToToggle = $(this.options.element.concat(this.options.controller.id.split('-').getLast()));
+			this.toggle(elementToToggle)
+		}.bind(this));
+		
+		//attach events to controller
+		
+	},
+	toggle:function(el){
+		if (!this.options.isClosed){
+			this.setOptions({
+				isClosed:true
+			});
+			el.slide('out');
+		}else{
+			el.slide('in');
+			this.setOptions({
+				isClosed:false
+			});
+			
+		}
+	}
+});
 window.addEvent('domready', function () {
 	//set up code for elements found on most every page.
 	
+});
+$("js-objectsearch-link").addEvent('click',function(evt){
+    evt.stop();
+    var param = "js-"+evt.target.id.split('-')[1]+"-container";
+    $(param).removeClass('dn');
+    new OverText('object_search',{
+        positionOptions:'padding-left:30px'
+    });
+    new Autocompleter.Request.JSON('object_search', '/search/', {
+        'minLength': 1,
+        'selectMode': 'type-ahead',
+        'postVar': 'searchVal',
+        'tokens': null,
+        'filterSubset': true,
+        'injectChoice': function(token) {
+            var choice = new Element('li');
+            new Element('div', {
+                'html': this.markQueryValue(token.name)
+            }).inject(choice);
+            new Element('span', {
+                'html': token.ct,
+                'class': 'small fl'
+            }).inject(choice);
+            new Element('span', {
+                'html': "<span class='{client}'>client</span>|<span class='{server}'>sever</span>".substitute(token),
+                'class': 'fr compact-text'
+            }).inject(choice);
+            new Element('br', {
+                'class': 'clearfloat'
+            }).inject(choice);
+			new Element('span', {
+				id:'',
+				'class':'dn',
+				text:token.url,
+				ct_id:token.ct_id
+			}).inject(choice);
+			choice.addEvent('click',function(evt){
+				console.log(token.url);
+				window.location.href = token.url;
+			});
+            this.addChoiceEvents(choice).inject(this.choices)
+        }
+		
+    });
+	var eMode = new UI.EditMode();
+	eMode.turnOn();
 });
