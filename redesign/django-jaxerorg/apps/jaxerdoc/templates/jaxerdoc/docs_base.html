@@ -30,7 +30,7 @@
                                     </form>
                                 </span>
                                 <br class="clearfloat" />
-                                <div class="mt-6">
+                                <div class="mt-6" id='wiki-content'>
                                     {% block docbody %}{% endblock %} 
                                 </div>
                             </div>
@@ -50,7 +50,6 @@
 					indent:3
 				});
 				var scroller = new Fx.SmoothScroll();
-				var tokens = ['Jaxer.Util.Math', 'Jaxer.Util', 'Jaxer.Util.DOM', 'Jaxer.Util.String', 'Jaxer.Util.Date'];
 				new Autocompleter.Request.JSON('doc-search', {% url jaxerdoc_ajax_search %}, {
 					'minLength': 1, // We need at least 1 character
 					'selectMode': 'type-ahead', // Instant completion

@@ -4,25 +4,39 @@
 
 {% block sidebar %}
 					{% with classitem.parameters.all as parameters %}
+					<span class="fr mt-20 small"><a href="edit" id="js-objectsearch-link" title="what type of object is this parameter">edit</a></span>
 					<h1>Class Parameters</h1>
+					<div class=" p_all-6 mt-6 bg-deep dn" id="js-objectsearch-container">
+						<form>
+							<input type="text" id="object_search" class="attention" style="width:90%;" title="What type of is this paramter?">
+						</form>
+					</div>
 					{% if parameters %}
-					<table class="tbl-list">
-						<tbody>
-							{% for parameter in parameters %}
-							<tr class="{% cycle '' 'alt' %}">
-								<td>
-									<div class="docs-heading">
-										{{ parameter.name }}: <span class="{{ parameter.content_object.name }}">{{ parameter.content_object.name }}</span>
-									</div>
-									<p class="compact-text">
-										{{ parameter.content }}
-									</p> 
-									<div class="compact-text italic mt-4">Required {% if parameter.required %}<img src="{{ MEDIA_URL }}css/img/rdo_on.png" />{% else %}<img src="{{ MEDIA_URL }}css/img/rdo_off.png" />{% endif %}</div>																		
-								</td>
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
+					<div >						
+						{% for parameter in parameters %}
+						<div class="{% cycle '' 'bg-med' %} mb-4">
+												
+							<div class="docs-heading">
+								{{ parameter.name }}: <span class="{{ parameter.content_object.name }} pos-rel">{{ parameter.content_object.name }}{% if parameter.has_properties %}<span class="pos-abs pl-2" style="cursor:pointer;"><img src="{{ MEDIA_URL}}/images/white_arrow_down.png" id="js-reveal-control-{{ parameter.content_object.id }}"/></span>{% endif %}</span>
+							</div>
+							<p class="compact-text">
+								{{ parameter.content }}
+							</p> 
+							<div class="compact-text italic mt-4">Required {% if parameter.required %}<img src="{{ MEDIA_URL }}css/img/rdo_on.png" />{% else %}<img src="{{ MEDIA_URL }}css/img/rdo_off.png" />{% endif %}</div>							
+						</div>
+						<div class="slide" id="js-reveal-content-{{ parameter.content_object.id }}">	
+						{% with parameter.properties.all as properties %}	
+						{% for property in properties %}
+							{% if property %}						
+							<div class="{% cycle 'bg-deep' '' %} p_all-6">							
+								<div class="mr-8 fl"><span class="{{ property.property_object.name }} bold">{{ property }}:</span></div><div class="fl small">{{ property.content }}</div><br class="clearfloat" />						
+							</div>
+							{% endif %}
+						{% endfor %}
+						{% endwith %}														
+						{% endfor %}					
+						</div>
+					</div>
 					{% else %}
 						<div class="empty-area">This {{ classitem.get_ct.name }} has no parameters</div>
 					{% endif %}
@@ -40,7 +54,8 @@
 									</div>
 									<p class="compact-text">
 										{{ property.content }}
-									</p></td>
+									</p>
+								</td>
 							</tr>
 						{% endfor %}
 					</table>
@@ -59,7 +74,7 @@
 														[{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>],
 													{% endcomment %} 
 													{% endif %}
-												{% endfor %} )
+												{% endfor %} <a href="{% url jaxerdoc_add_param_to_object classitem.get_ct.id classitem.id %}" class="object">add</a>)
 {% endblock %}
 {% block subheading-right%}
 				Availibity:<a href="#">{{ classitem.availablity.get_short_version }}+</a>
@@ -82,8 +97,8 @@
 								<tr>
 									<th colspan="4">
 										<span class="bold italic white">{{ method }}</span> ( {% for param in method.parameters.all %}
-																								{% if param.required %}{{ param }}: 
-																								 <span class="{{ param.content_object.name }} bold">{{ param.content_object.name }}</span>,
+																								{% if param.required %}
+																									{{ param }}: <span class="{{ param.content_object.name }} bold">{{ param.content_object.name }}</span>,
 																								  {% else %} 
 																								     [{{ param }}: <span class="{{ param.content_object.name }} bold">{{ param.content_object.name }}</span>],
 																								  {% endif %} 
@@ -123,18 +138,3 @@
 				{% endwith %}
 				<div class="comact-text mt-10 italic">last edited by <a href="#">{{ classitem.editor }}</a> on ...</div>
 {% endblock %}
-<script type='text/javascript'>
-                               new AutoCompleter.Request.Json(id_"param_type", /search/objects/,{
-                                'minLength': 1, // We need at least 1 character
-                                'selectMode': 'type-ahead', // Instant completion
-                                'postVar': 'searchVal',
-                                'tokens': null,
-                                'filterSubset':true,
-                                'injectChoice':function(token){
-                                    new Element('li',{
-                                        'html':token.name
-                                    }).inject(choice);
-                                }
-                                this.addChoiceEvents(choice).inject(this.choices)                           
-                               });
-                          </script>
