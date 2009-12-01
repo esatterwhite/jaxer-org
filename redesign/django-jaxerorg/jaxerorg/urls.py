@@ -29,7 +29,7 @@ urlpatterns += patterns('',
     url(r'^core/', include('jaxerorg.core.urls')),                        
 )
 
-urlpatterns += patterns('jaxerdoc.views',
+urlpatterns += patterns('jaxerdoc.searchviews',
     url(r'^search/', 'ajax_doc_search', name='jaxerdoc_ajax_search'),
                         
 )
