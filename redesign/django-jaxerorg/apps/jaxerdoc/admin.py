@@ -4,7 +4,7 @@ from django.contrib.contenttypes import generic
 #inline definitions
 class AdminMethodInline(generic.GenericStackedInline):
     model = Function
-    fieldsets=(
+    fieldsets = (
         (None,{'fields': ('name','editor')}),
         ('Information',{
                         'fields':('content',),
@@ -21,13 +21,18 @@ class AdminMethodInline(generic.GenericStackedInline):
                       }
         ),
     )
-class AdminPropertyInline(generic.GenericStackedInline):
-    model = Property
-    list_display = ('content_type', 'object_id')
+
 class AdminParameterInline(generic.GenericStackedInline):
     model = Parameter
+
+class AdminPropertyInline(generic.GenericStackedInline):
+
+    model = Property
+    list_display = ('content_type', 'object_id')    
 class AdminJavascriptObjectInline(generic.GenericStackedInline):
+    inlines = [AdminMethodInline, AdminPropertyInline]
     model = JavascriptObject
+    list_display = ('name','id')
 #modeladmin definitions
 class AdminJavaScriptObject(admin.ModelAdmin):
     inlines = [AdminMethodInline, AdminPropertyInline ]
@@ -47,7 +52,7 @@ class AdminJavaScriptObject(admin.ModelAdmin):
 class AdminClassItem(admin.ModelAdmin):
     inlines = [AdminParameterInline, AdminMethodInline, AdminPropertyInline ]
     list_display = ('class_name','id')
-    fieldsets=(
+    fieldsets = (
         (None,{
                'fields':('editor',)
                }
@@ -91,11 +96,14 @@ class AdminFunctionModel(admin.ModelAdmin):
         
     )
 class AdminParameterModel(admin.ModelAdmin):
-    inlines = [ AdminPropertyInline ]
+    inlines = [AdminPropertyInline, ]
+    list_display = ('name', 'id')
+class AdminPropertyModel(admin.ModelAdmin):
+    list_display = ('name', 'id')
     
 admin.site.register(JavascriptObject, AdminJavaScriptObject)
 admin.site.register(ClassItem, AdminClassItem)
 admin.site.register(JaxerNameSpace, AdminJaxerNameSpace)
-admin.site.register(Property)
+admin.site.register(Property, AdminPropertyModel)
 admin.site.register(Function, AdminFunctionModel)
-admin.site.register(Parameter)
+admin.site.register(Parameter, AdminParameterModel)
