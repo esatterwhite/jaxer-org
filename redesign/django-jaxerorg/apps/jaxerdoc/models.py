@@ -358,6 +358,9 @@ class ClassItem(Function):
         return "%s Instance" % self.__unicode__()
     def has_properties(self):
         return self.properties.count() >0
+    def inherited_methods(self):
+        '''attempt to retrieve the methods inherited from namespace objects'''
+        return self.parent_namespace.methods.all() or []
     @permalink
     def get_absolute_url(self):
         return('jaxerdoc.views.document_detail', (), {'oslug':self.slug,'ctid':self.get_ct_id(), 'objid':self.id})
