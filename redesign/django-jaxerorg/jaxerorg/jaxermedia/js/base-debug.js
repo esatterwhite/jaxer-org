@@ -271,7 +271,7 @@ utils.AjaxTabToggler = new Class({
 	 *  @
 	 */
 	Implements: [Events, Options, utils.TabToggler],
-//	Extends:HitmenTabToggler,
+//	Extends:TabToggler,
 	options:{
 		tabs:[], // Holder for the DOM Elements so we don't have to traverse the DOM on every click.
 		container:'stats-container' //a DOM element where the results will be placed
