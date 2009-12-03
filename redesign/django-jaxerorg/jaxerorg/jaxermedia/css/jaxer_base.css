@@ -1,6 +1,7 @@
 html{background:#0D0D0D url(img/primary_bg_deep.jpg) repeat-y top center;}
 body { background:#0D0D0D url(img/primary_bg_deep.jpg) repeat-y top center; font-size:small; color:#ccc; font-family:"Trebuchet MS", Arial, Helvetica, sans-serif }
 input{background-color:#111; color:#FFF; font-family:"Trebuchet MS"; padding-left:2px}
+input.attention{background:#111 url(img/exclamation.png)5px no-repeat; padding:2px 2px 2px 25px; border:#222 1px solid;}
 a{text-decoration:none; color:#15A555}
 a:hover{color:#FFF !important;}
 h1{font-family:"Arial Black", Tahoma, Verdana, Helvetica, sans-serif; font-size:2em; color:#FFF;}
@@ -11,6 +12,7 @@ h3{}
 h4{font-size:16px; font-weight:bold; color:#15A555; border-bottom:1px solid #333; margin-bottom:4px;}
 h5{}
 h6{}
+.dn{display:none;}
 .white{color:#FFF;}
 .italic{font-style:italic}
 .bold{font-weight:bolder;}
@@ -125,7 +127,7 @@ h6{}
  * Jaxer.org universal styles
  */
 
-.docs-heading{ color:#fff; font: 1.4em "Arial Black", Arial, sans-serif; }
+.docs-heading{ color:#fff; font: 1.3em "Arial Black", Arial, sans-serif; }
 .comment, .Comment{color:#5F5A60; font-style:italic;}
 .number, .Number{color: #CF6745;}
 .boolean, .Boolean{color: #986591;}

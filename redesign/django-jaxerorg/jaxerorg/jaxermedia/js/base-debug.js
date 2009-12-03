@@ -2,6 +2,16 @@
  * @author Eric
  */
 var utils = {};
+utils.toggleOnOff = function(el_is_on, el_is_off) {
+	if(el_is_on && el_is_off){
+		el_is_on.addClass('dn');
+		el_is_off.removeClass('dn');
+	}
+	else if(el_is_on && el_is_off === undefined ){
+		el_is_on.toggleClass('dn');
+	}
+	else{return false;}
+}
 utils.Overlay = new Class({
 	Implements: [Options, Events, Chain],
 	options: {
@@ -264,8 +274,7 @@ utils.AjaxTabToggler = new Class({
 //	Extends:HitmenTabToggler,
 	options:{
 		tabs:[], // Holder for the DOM Elements so we don't have to traverse the DOM on every click.
-		container:'stats-container', //a DOM element where the results will be placed
-		
+		container:'stats-container' //a DOM element where the results will be placed
 	},
     initialize: function(){
         var t = $$('div a[id^="ajaxtab-"]');
@@ -365,8 +374,13 @@ UI.EditMode = new Class({
 	options:{
 		isEditModeOn:false,
 		editorScriptsLoaded:false,
-		warningBlock:null
-		
+		warningBlock:null,
+		MEDIA_URL:'http://media.jaxer.org/',
+		formURL:null, //the url to retrive the editing form from
+		editor_element:'id_content', // the id of the textarea we are going to convert to the editor
+		editorActions:"h2 h4 p | bold italic | insertunorderedlist indent outdent | undo redo | createlink unlink | image | insertcode toggleview",
+		wikiArea:'js-wiki-',
+		_RTE:null
 	},
 	initialize:function(options){
 		if(options !== undefined ){
@@ -439,8 +453,52 @@ UI.EditMode = new Class({
 		} else {
 			return false;
 		}
+	},
+	buildEditor:function(){
+		if(!this.options.isEditModeOn){
+			this.turnOn();			
+		}
+		else{
+			return false;
+		}
+		var send_btn, form_wrap, form, moo, form_set, controls;
+		
+		form = new Element('form',{})
+		form_set = new Element('fieldset',{}).inject(form);
+		form_wrap = new Element('ul').inject(form_set);
+		if(this.options.form_url === null){
+			return false;
+		}
+		
+		new Request.HTML({
+			method:'get',
+			url:this.options.formURL,
+			onFailure:function(){
+				
+			},
+			onSuccess:function(rTree, rEls, rHTML, rScripts){
+				var wikiContainer;
+				wikiContainer = $$('div[id^={wikiArea}]'.substitute(this.options))[0];
+				wikiContainer.empty();
+				wikiContainer.adopt(form);
+				form_wrap.set('html', rHTML)
+				moo = $(this.options.editor_element).mooEditable({
+					externalCSS:"{MEDIA_URL}css/jaxerRTE.css".substitute(this.options),
+					actions:this.options.editorActions
+				});	
+				this.options._RTE = moo;		
+			}.bind(this)
+		}).send();
+		
+		controls = new Element('li').inject(form_set, 'bottom');
+		send_btn = new Element('a', {
+			text:"submit"
+		}).inject(controls);
+	
+	},
+	insert:function(content){
+		this.options._RTE.selection.insertContent(content);
 	}
-
 })
 UI.ScollPanel = new Class({
 	Implements: [Options, Events],
@@ -528,11 +586,15 @@ UI.ContentRevealer = new Class({
 	options:{
 		controller:'',
 		element:'js-reveal-content-',
-		_elements:[],
+		_elements:[], // reverence to the collection of elements we are sliding to prevent repeated DOM traversal
 		container:'div',
 		selector:'.slide',
 		splitter:'-',
-		isClosed:false
+		isClosed:false,
+		onOpen:$empty,
+		onClose:$empty,
+		onOpenAll:$empty,
+		onCloseAll:$empty
 	},
 	/**
 	 * 
@@ -549,7 +611,7 @@ UI.ContentRevealer = new Class({
 		this.options._elements = $$(this.options.container+this.options.selector);
 		this.options._elements.each(function(el){
 			el.set('slide',{duration:'long',transition:'quad:out'});
-			el.slide('out');
+			el.slide('hide');
 			this.setOptions({
 				isClosed:true
 			});
@@ -568,13 +630,30 @@ UI.ContentRevealer = new Class({
 				isClosed:true
 			});
 			el.slide('out');
+			this.fireEvent('close', el);
 		}else{
 			el.slide('in');
 			this.setOptions({
 				isClosed:false
 			});
-			
+			this.fireEvent('open', el);
 		}
+	},
+	openAll:function(){
+		this.options._elements.each(function(el){
+			el.slide('in');
+			this.fireEvent('open', el);
+		});
+		this.options.isClosed = false;
+		this.fireEvent('openall', this.options._elements);
+	},
+	closeAll:function(){
+		this.options._elements.each(function(el){
+			el.slide('out');
+			this.fireEvent('close', el);
+		});
+		this.options.isClosed = true;
+		this.fireEvent('closeall', this.options._elements);
 	}
 });
 window.addEvent('domready', function () {
@@ -624,6 +703,4 @@ $("js-objectsearch-link").addEvent('click',function(evt){
         }
 		
     });
-	var eMode = new UI.EditMode();
-	eMode.turnOn();
 });
