@@ -17,7 +17,7 @@
 						<div class="{% cycle '' 'bg-med' %} mb-4">
 												
 							<div class="docs-heading">
-								{{ parameter.name }}: <span class="{{ parameter.content_object.name }} pos-rel">{{ parameter.content_object.name }}{% if parameter.has_properties %}<span class="pos-abs pl-2" style="cursor:pointer;"><img src="{{ MEDIA_URL}}/images/white_arrow_down.png" id="js-reveal-control-{{ parameter.content_object.id }}"/></span>{% endif %}</span>
+								{{ parameter.name }}: <span class="{{ parameter.content_object.name }} pos-rel" id="js-reveal-control-{{ parameter.content_object.id }}" {% if parameter.has_properties %} style="cursor:pointer {% endif %} ">{{ parameter.content_object.name }}{% if parameter.has_properties %}<span class="pos-abs pl-2" ><img src="{{ MEDIA_URL}}/images/white_arrow_down.png" /></span>{% endif %}</span>
 							</div>
 							<p class="compact-text">
 								{{ parameter.content }}
@@ -84,12 +84,17 @@
 {% endblock %}
 {% block type %}{TYPE:{{classitem.get_ct.name }} }{% endblock %}
 {% block docbody %}
-				<p>{{ classitem.get_html_content|safe}}</p>
+				<span class="fr" content_type_id="{{ classitem.get_ct_id }}" object_id="{{ classitem.id }}">
+					<a href="{% url jaxerdoc_modify_document ctid=classitem.get_ct_id, objid=classitem.id %}" id="js-wiki-edit-{{ classitem.id }}">edit</a>
+				</span>
+				<br class="clearfloat" />
+				<div id='js-wiki-content-{{ classitem.id }}'>
+					<p>{{ classitem.get_html_content|safe}}</p>
+				</div>
 				{% with classitem.methods.all as methods %}
 				 {% if methods %}
-				 <h4>Methods</h4>
-				  
-				<div class="p_all-8 bg-nearblack border-light">
+				 <h4>Methods</h4>				  
+			    	<div class="p_all-8 bg-nearblack border-light">
 					<table class="tbl-list compact-text">
 						<tbody>
 							{% for method in methods %}	
@@ -127,14 +132,139 @@
 							</tr>
 							{% endfor %}
 						{% endfor %}
-
 						</tbody>
 					</table>
-				</div>
-				  
+				</div>			  
 				 {% else %}
 				 <div class="empty-area">This class has no methods </div>
 				 {% endif %}
 				{% endwith %}
 				<div class="comact-text mt-10 italic">last edited by <a href="#">{{ classitem.editor }}</a> on ...</div>
+				<script type="text/javascript">
+					var em;
+					window.addEvent('domready', function(evt){
+						var cr = new UI.ContentRevealer('js-reveal-control-{{ classitem.id }}')
+						em = new UI.EditMode({
+							MEDIA_URL:'{{ MEDIA_URL}}',
+							formURL:'{% url jaxerdoc_modify_document ctid=classitem.get_ct_id, objid=classitem.id %}'
+						});
+						$$('a[id^=js-wiki-edit]').each(function(el){
+							el.addEvent('click', function(evt){
+								evt.stop();
+								//em.turnOn();
+								em.buildEditor();
+							});
+						});
+							MooEditable.Actions.p = {
+								title:'Paragragh',
+								type:'button',
+								options: {
+									states: {
+										tags: ['p']
+									},
+									mode:'icon'
+								},
+								command: function(name){
+									var argument = '<' + name.name + '>';
+									this.focus();
+									this.execute('formatBlock', false, argument);
+								}
+							};
+							MooEditable.Actions.h2 = {
+								title:'H2',
+								type:'button',
+								options:{
+									mode:'icon'
+								},
+								command: function(name){
+									var argument = '<' + name.name + '>';
+									this.focus();
+									this.execute('formatBlock', false, argument);
+								}
+							};
+			
+							MooEditable.Actions.h4 = {
+								title: 'H4',
+								type: 'button',
+								options: {
+									mode: 'icon'
+								},
+								command: function(name){
+									var argument = '<' + name.name + '>';
+									this.focus();
+									this.execute('formatBlock', false, argument);
+								}
+							};
+							MooEditable.Actions.insertcode={
+								title:"Insert Code",
+								type:"button",
+								options:{
+									mode:'icon',
+									shotcut:'q'
+								},
+								states:{
+									tags:['pre']
+								},
+								command:function(button, e){
+									var codeBox, form, control, submit_btn, wrap, result_obj, node;
+									result_obj = {};
+									codeBox = new utils.LaunchPad();
+									form = new Request.HTML({
+										evalScripts: false,
+										url:'{% url core_ajax_codeform %}',
+										'onFailure': function () {
+											codeBox.showBox({
+												titleBar:"Insert Code",
+												stage:'Problem retriving the insert code form<br />Let someone know!',
+												closeable:true
+											});
+											
+										},
+										'onSuccess': function (responseTree, responseElements, responseHTML) {
+											codeBox.showBox({
+												titleBar:"Insert Code",
+												stage:'',
+												closeable:false
+											});
+											var fset = new Element('fieldset');
+											fset.inject('stage');	
+											fset.set('html', responseHTML);
+											control = new Element('li');
+											wrap = new Element('span').addClass('button_wrap');
+											submit_btn = new Element('a', {
+												href: "#",
+												text: "Insert Code",
+												events: {
+													click: function () {
+														var raw_code, safe_code;
+														raw_code = $('id_code').value;
+														safe_code = raw_code;
+														
+														safe_code = safe_code.replace(/</g,'&lt;')
+														safe_code = safe_code.replace(">", "&gt;");
+														safe_code = safe_code.replace("<", "\&lt;");
+														//safe_code = safe_code.replace("&amp;lt", "&lt;")
+														result_obj = {
+															language:$('id_language').value,
+															syntax: safe_code
+														}
+					                                    if (safe_code !== "") {
+					                                        node = "<pre class='"+ result_obj.language+":twilight'>"+result_obj.syntax+"</pre>";                                    
+					                                        em.insert(node);												
+					                                    }
+														codeBox.hideBox();
+														result_obj = raw_code = safe_code = '';
+													}
+												}
+											}).addClass('dark_button');
+											submit_btn.inject(wrap);
+											wrap.inject(control);
+											control.inject(fset);
+											codeBox.show();
+										}
+									}).send();
+								}
+							};						
+					});
+				</script>
 {% endblock %}

@@ -8,6 +8,10 @@ urlpatterns = patterns('jaxerdoc.views',
     url(r'^parameter/add/(?P<add_to_ct>\d+)-(?P<add_to_id>\d+)/', 
         'add_parameter_to_object',
          name="jaxerdoc_add_param_to_object"),
+         
+    url(r'^(?P<ctid>\d+)-(?P<objid>\d+)/edit/$', 
+        'ajax_document_edit',
+         name="jaxerdoc_modify_document"),         
 )
 
 

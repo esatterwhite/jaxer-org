@@ -1,0 +1,150 @@
+{% extends 'jaxerdoc/docs_base.html' %}
+
+
+
+{% block sidebar %}
+					{% with jaxernamespace.parameters.all as parameters %}
+					<h1>{{ jaxernamespace.get_ct}} Parameters</h1>
+					{% if parameters %}
+					<table class="tbl-list">
+						<tbody>
+							{% for parameter in parameters %}
+							<tr class="{% cycle '' 'alt' %}">
+								<td>
+									<div class="docs-heading">
+										{{ parameter.name }}: <span class="{{ parameter.content_object.name }}">{{ parameter.content_object.name }}</span>
+									</div>
+									<p class="compact-text">
+										{{ parameter.content }}
+									</p> 
+									<div class="compact-text italic mt-4">Required {% if parameter.required %}<img src="{{ MEDIA_URL }}css/img/rdo_on.png" />{% else %}<img src="{{ MEDIA_URL }}css/img/rdo_off.png" />{% endif %}</div>																		
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					{% else %}
+						<div class="empty-area">This {{ jaxernamespace.get_ct.name }} has no parameters</div>
+					{% endif %}
+					{% endwith %}
+					{% with jaxernamespace.properties.all as properties %}
+                    <h1>Class Properties</h1>
+					{% if properties %}
+					<table class="tbl-list">
+						<tbody>
+						{% for property in properties %}
+							<tr class="{% cycle '' 'alt' %}">
+								<td>
+									<div class="docs-heading">
+										{{ property.name }}: <span class="{{ property.property_object.name}}">{{ property.property_object.name}}</span>
+									</div>
+									<p class="compact-text">
+										{{ property.content }}
+									</p></td>
+							</tr>
+						{% endfor %}
+					</table>
+					{% else %}
+						<div class="empty-area">This {{ jaxernamespace.get_ct.name }} has no properties</div>
+					{% endif %}
+					{% endwith %}
+{% endblock %}
+{% block docheading %}{% if jaxernamespace.root_namespace %}{{ jaxernamespace.root_namespace.name }}.{% endif %}{% if jaxernamespace.parent_namespace %}{{ jaxernamespace.parent_namespace.name }}.{% endif %}{{ jaxernamespace.name }}{% endblock %}
+{% block subheading-left %}
+						{{ jaxernamespace.name }}( {% for param in jaxernamespace.parameters.all %}
+													{% if param.required %}
+														{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>, 
+													{% comment %}
+													{% else %}
+														[{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>],
+													{% endcomment %} 
+													{% endif %}
+												{% endfor %} <a href="{% url jaxerdoc_add_param_to_object jaxernamespace.get_ct.id jaxernamespace.id %}">add</a>)
+{% endblock %}
+{% block subheading-right%}
+				Availibity:<a href="#">{{ jaxernamespace.availablity.get_short_version }}+</a>
+	{% if jaxernamespace.is_depricated %}
+				Depricated <a href="#">{{ jaxernamespace.depricated.get_short_version }}+</a>
+	{% endif %}
+{% endblock %}
+{% block type %}{TYPE:{{jaxernamespace.get_ct.name }} }{% endblock %}
+{% block docbody %}
+				{% with jaxernamespace.classitem_set.all as classes %}
+				{% if classes %}
+				<h2>Classes</h2>
+				<div class="mb-6 bg-nearblack border-light">
+					{% for class in classes %}
+						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class }}">{{ class }}</a></div>
+					{% endfor %}
+				</div>
+				{% endif %}
+				{% endwith %}
+				<p>{{ jaxernamespace.get_html_content|safe}}</p>
+				{% with jaxernamespace.methods.all as methods %}
+				 {% if methods %}
+				 <h4>Methods</h4>
+				  
+				<div class="p_all-8 bg-nearblack border-light">
+					<table class="tbl-list compact-text">
+						<tbody>
+							{% for method in methods %}	
+							<thead>
+								<tr>
+									<th colspan="4">
+										<span class="bold italic white">{{ method }}</span> ( {% for param in method.parameters.all %}
+																								{% if param.required %}{{ param }}: 
+																								 <span class="{{ param.content_object.name }} bold">{{ param.content_object.name }}</span>,
+																								  {% else %} 
+																								     [{{ param }}: <span class="{{ param.content_object.name }} bold">{{ param.content_object.name }}</span>],
+																								  {% endif %} 
+																								{% endfor %} ):{% if method.returns.all %}
+																												{% for obj in method.returns.all %} <span class="{{ obj.ret_object }}">{{obj}}</span>|{% endfor %}
+																											   {% else %} 
+																												<span class="keyword">void</span>
+																										       {% endif %}
+																								
+									</th>
+								</tr>
+							</thead>
+							<tr class="alt">
+								<td colspan="4">
+									{{ method.get_html_content }}
+								</td>
+							</tr>
+							{% for param in method.parameters.all %}			
+							<tr class="{% cycle '' 'alt' %}">
+								<td>
+									<span class="{{ param.content_object.name }}">{{ param }}</span>
+								</td>
+								<td>
+									{{ param.content }}
+								</td>
+							</tr>
+							{% endfor %}
+						{% endfor %}
+
+						</tbody>
+					</table>
+				</div>
+				  
+				 {% else %}
+				 <div class="empty-area">This class has no methods </div>
+				 {% endif %}
+				{% endwith %}
+				<div class="comact-text mt-10 italic">last edited by <a href="#">{{ jaxernamespace.editor }}</a> on ...</div>
+{% endblock %}
+<script type='text/javascript'>
+                               new AutoCompleter.Request.Json(id_"param_type", /search/objects/,{
+                                'minLength': 1, // We need at least 1 character
+                                'selectMode': 'type-ahead', // Instant completion
+                                'postVar': 'searchVal',
+                                'tokens': null,
+                                'filterSubset':true,
+                                'injectChoice':function(token){
+                                    new Element('li',{
+                                        'html':token.name
+                                    }).inject(choice);
+                                }
+                                this.addChoiceEvents(choice).inject(this.choices)                           
+                               });
+                          </script>

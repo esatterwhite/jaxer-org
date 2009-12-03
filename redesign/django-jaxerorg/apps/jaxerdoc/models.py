@@ -117,7 +117,7 @@ class StandardDocumentModel(SelfAwareModel):
             this function
         '''
         from jaxerhotsauce.utils import make_difPatch
-        diff_text = make_difPatch(self.content, old_content)
+        diff_text = make_difPatch(self.get_html_content(), old_content)
         change =    ChangeSet.objects.create(content_diff=diff_text, 
                                       content_type=self.content_type, 
                                       object_id=self.id, 
@@ -370,3 +370,58 @@ class ClassItem(Function):
         verbose_name = 'Class'
         verbose_name_plural = 'Classes'
         
+class QueuedItem(models.Model):
+    ''' when the body of a document is edited, we do not want to to go
+        live on the site. The QueuedItem model is a generic item that
+        holds a reference to: 
+        
+        the item that was edited
+        the current revision of the reverence item 
+        ( incase an edit is accepted after this was submitted )
+        
+        The content as is ( HTML CODE INCLUDED )
+        
+        This is really only for editing the main body of a document.
+    '''
+    content_type =   models.ForeignKey(ContentType)
+    object_id =      models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    
+    content =        models.TextField(blank=False)
+    at_revision =    models.PositiveIntegerField()
+    
+    approve =        models.BooleanField()
+    deny =          models.BooleanField()
+    
+    def __unicode__(self):
+        return "edit for %s on revision %s" %(self.content_object, self.at_revision)
+    def display_diff_html(self):
+        # get the content object's HTML
+        # get all of its changesets greater than this version number
+        # aplly the patches ( do not save over )
+        # get difference HTML between the reverted object ( if reverted )
+        # return the content object HTML( original )
+        # return the differenc HTML ( proposed Change )
+        
+        dmp = diff_match_patch()
+        document_obj = self.content_object
+        proposed_change = None
+        
+        #get all changesets greater than self.revision ordered -revision
+        changesets = document_obj.changeset_set.filter(
+                                                      revision__gt=self.at_revision
+                                                      ).order_by('-revision')
+        
+        #collect the content diff & convert to patch
+        current_html = None
+        for change in changesets:
+            if current_html is None:
+                current_html = document_obj.get_html_content()
+                
+            patch = dmp.patch_fromText(change.content_diff)
+            
+            #apply patches to the current content object
+            current_html = dmp.patch_apply(patch, current_html)[0]
+            
+        diffs = dmp.diff_main(current_html, proposed_change, checklines=False)
+        return dmp.diff_prettyHtml(diffs)

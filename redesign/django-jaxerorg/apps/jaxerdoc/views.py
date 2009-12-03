@@ -1,7 +1,7 @@
 # Create your views here.
 #searching for words r =c.search('obj*').flags(djapian.resultset.xapian.QueryParser.FLAG_WILDCARD)
 from django.utils import simplejson
-from django.http import HttpResponse, Http404, HttpResponseBadRequest
+from django.http import HttpResponse, Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import get_model
@@ -41,6 +41,26 @@ def document_detail(request, oslug, ctid, objid, template_name=None):
     template = template_name or "jaxerdoc/%s_detail.html" % type.model
     return render_to_response(template, {"%s" % type.model:obj}, context_instance=RequestContext(request))
 
+def ajax_document_edit(request, ctid, objid, template_name=None):
+    from jaxerdoc.forms import GenericEditForm
+    if request.is_ajax():
+        if request.POST:
+            
+            form = GenericEditForm(request.POST)
+            if form.is_valid():
+                pass
+        else:
+            from jaxerdoc.utils import get_object
+            obj = get_object(ctid, objid)
+            form = GenericEditForm(initial={'editor':request.user, 
+                                            'object_id':objid, 
+                                            'content_type':ctid, 
+                                            'content':obj.get_html_content()
+                                            })
+            return HttpResponse(form.as_ul())
+    else:
+        raise Http404
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 def add_parameter_to_object(request, add_to_id, add_to_ct):
     
