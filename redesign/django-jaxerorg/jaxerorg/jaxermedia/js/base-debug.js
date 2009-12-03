@@ -416,7 +416,7 @@ UI.EditMode = new Class({
 			text:'cancel!',
 			events:{
 				'click':function(evt){
-					console.log('click');
+					//console.log('click');
 					this.confirmExit();
 				}.bind(this)
 			}
@@ -696,7 +696,7 @@ $("js-objectsearch-link").addEvent('click',function(evt){
 				ct_id:token.ct_id
 			}).inject(choice);
 			choice.addEvent('click',function(evt){
-				console.log(token.url);
+				//console.log(token.url);
 				window.location.href = token.url;
 			});
             this.addChoiceEvents(choice).inject(this.choices)
