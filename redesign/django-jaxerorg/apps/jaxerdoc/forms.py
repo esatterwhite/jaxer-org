@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import fields
-from jaxerdoc.models import ClassItem,Property, Parameter, Function, JavascriptObject, JaxerNameSpace, QueuedItem
+from jaxerdoc.models import ClassItem,Property, Parameter, Function, JavascriptObject, JaxerNameSpace, QueuedItem,\
+    MODERATION_OPTIONS
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from jaxerdoc.widgets import AjaxObjectSearchbar
@@ -15,51 +16,64 @@ class AddParameterForm(forms.ModelForm):
         model = Parameter
 
 class GenericEditForm(forms.ModelForm):
+    from jaxerdoc.models import MODERATION_OPTIONS
     '''
         this is a generic form that should be used when submitting
-        an edit to a wiki item. The only visible item will be the content
+        an edit to a wiki-able item. The only visible item will be the content
         area, which will be displayed on the page for people to edit
         
         when saved, a new queueditem will be created
     '''
+    editor =       forms.ModelChoiceField(User.objects.all(), widget=fields.HiddenInput())
     content_type = forms.ModelChoiceField(ContentType.objects.all(), widget=fields.HiddenInput())
     object_id =    forms.CharField(widget=fields.HiddenInput())
-    at_revision =  forms.ModelChoiceField(ChangeSet.objects.all(), widget=fields.HiddenInput())
+    at_revision =  forms.CharField(widget=fields.HiddenInput())
     content =      forms.CharField(widget=forms.Textarea(attrs={'rows':'30'}))
+   
     class Meta:
         model = QueuedItem
-        exclude = ['approve', 'deny']
-class QueDocumentationForm(forms.ModelForm):
+        exclude = ('moderate','submit_date')
+class QueueModerationForm(forms.ModelForm):
     '''
-        this form MUST be subclassed and the model must 
-        be set in the meta innerclass
+        This form is for use by documentation moderators to approve/deny
+        current items in the queue
     '''
-    editor =    forms.ModelChoiceField(queryset=User.objects.all(),widget=forms.HiddenInput())
-    comment =   forms.CharField()
-    action =    forms.CharField(widget=forms.HiddenInput())
+    
+    content_type = forms.ModelChoiceField(ContentType.objects.all(), widget=fields.HiddenInput())
+    object_id =    forms.CharField(widget=fields.HiddenInput())
+    at_revision =  forms.CharField(widget=fields.HiddenInput())
+    content =      forms.CharField(widget=forms.Textarea(attrs={'rows':'30'}))
+    moderate =     forms.CharField(widget=forms.RadioSelect(choices=MODERATION_OPTIONS, attrs={'class':'fl'}))
     
     class Meta:
-        model = ''
-
+        model = QueuedItem
+        
     def save(self):
-        ''' DOCSTRING '''
-        # get old infor before saving
-
-        comment = self.cleaned_data['comment']
-        editor = self.cleaned_data['editor']
+        '''
+            Queued items are only intended to be moderated once, so we
+            want to check to see if the moderate field is not NULL.
+            If it is not NULL, we know it has been moderated already
+        '''
+        # their should never be an 'new' instance of a queueditem
+        # but better safe than sorry
         if self.instance.id is None:
-            old_name = ""
-            old_content = ""
-            new = True
+            return False
         else:
-            old_name= self.instance.name
-            old_content=self.instance.content
-            new = False
+            moderated = self.instance.modaerate
             
-        new_item = super(QueDocumentationForm, self).save()
-        if new:
-            new_item.editor = editor
-            new_item.save()
-        # create new ChangeSet
-        new_item.send_to_que(old_content, old_name, comment, editor)
+        
+        if moderated is None:
+            # if moderated is None
+            # we want to apply the edit to the item
+            # and create a changeset for the item.
+            
+            # update the instance
+            super(QueueModerationForm, self).save()
+            pass
+        else:
+            pass
+            # if moderated is not None
+            # it has already been moderated and we 
+            # do not want to do anything!
+            super(QueueModerationForm,self).save()
         

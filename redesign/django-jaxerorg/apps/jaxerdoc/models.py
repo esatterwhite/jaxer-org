@@ -2,20 +2,23 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-
 from django.db.models import Q
 from django.db.models import permalink
-from jaxerorg.core.models import JaxerRelease
-from jaxerhotsauce.models import ChangeSet
 from django.contrib.auth.models import User
 from diff_match_patch.diff_match_patch import diff_match_patch
-from jaxerdoc.managers import Manager, NaitiveObjectManager, CustomObjectManager, GlobalFunctionManager
+from jaxerdoc.managers import Manager, CustomObjectManager, GlobalFunctionManager, UnmanagedQueItemManager
+from jaxerorg.core.models import JaxerRelease
+from jaxerhotsauce.models import ChangeSet
 import datetime
 
 jsobjects =       Q(model__iexact='javascriptobject')
 jsfunction =      Q(model__iexact='function')
 jsclass =         Q(model__iexact='classitem')
 jsnamespace =     Q(model__iexact='jaxernamespace')
+MODERATION_OPTIONS=(
+    ('approval','Approve'),
+    ('denial','Deny')
+)
 
 # generic - can go on anything
 class SelfAwareModel(models.Model):
@@ -83,7 +86,7 @@ class StandardDocumentModel(SelfAwareModel):
         '''takes a revision number queries for the changset and returns it '''
         
         #a ChangeSet Instance
-        changeset = self.changeset_set.objects.get(version=revision)
+        changeset = self.changes.get(version=revision)
         changeset.reapply(author)
         
     def latest_changeset(self):
@@ -95,6 +98,12 @@ class StandardDocumentModel(SelfAwareModel):
     def current_version(self):
         '''DOCSTRINGS'''
         return self.changeset_set.latest()[0]
+    def version_number(self):
+        count = self.changes.count()
+        if count < 1:
+            return 1
+        else:
+            return count    
     
     def apply_patch_from_que(self, ptext, description, editor):
         #will be betting a patch_text object from the queue
@@ -358,9 +367,6 @@ class ClassItem(Function):
         return "%s Instance" % self.__unicode__()
     def has_properties(self):
         return self.properties.count() >0
-    def inherited_methods(self):
-        '''attempt to retrieve the methods inherited from namespace objects'''
-        return self.parent_namespace.methods.all() or []
     @permalink
     def get_absolute_url(self):
         return('jaxerdoc.views.document_detail', (), {'oslug':self.slug,'ctid':self.get_ct_id(), 'objid':self.id})
@@ -374,6 +380,7 @@ class ClassItem(Function):
         verbose_name_plural = 'Classes'
         
 class QueuedItem(models.Model):
+    
     ''' when the body of a document is edited, we do not want to to go
         live on the site. The QueuedItem model is a generic item that
         holds a reference to: 
@@ -386,16 +393,20 @@ class QueuedItem(models.Model):
         
         This is really only for editing the main body of a document.
     '''
+    editor =         models.ForeignKey(User)
     content_type =   models.ForeignKey(ContentType)
     object_id =      models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    
+    submit_date =    models.DateTimeField(_('Submitted'), default=datetime.datetime.now())
     content =        models.TextField(blank=False)
+    comment =        models.CharField(max_length=400, blank=True)
     at_revision =    models.PositiveIntegerField()
     
-    approve =        models.BooleanField()
-    deny =          models.BooleanField()
-    
+    moderate =       models.CharField(max_length=30, choices=MODERATION_OPTIONS, 
+                                                      blank=True, null=True)
+    mod_reason =     models.CharField(_('Mod Comments'), max_length=300, blank=True, null=True)
+    objects =        Manager()
+    unmanaged =      UnmanagedQueItemManager()
     def __unicode__(self):
         return "edit for %s on revision %s" %(self.content_object, self.at_revision)
     def display_diff_html(self):
@@ -404,27 +415,30 @@ class QueuedItem(models.Model):
         # aplly the patches ( do not save over )
         # get difference HTML between the reverted object ( if reverted )
         # return the content object HTML( original )
-        # return the differenc HTML ( proposed Change )
+        # return the difference HTML
         
         dmp = diff_match_patch()
         document_obj = self.content_object
-        proposed_change = None
         
         #get all changesets greater than self.revision ordered -revision
-        changesets = document_obj.changeset_set.filter(
-                                                      revision__gt=self.at_revision
-                                                      ).order_by('-revision')
+        changesets = document_obj.changes.filter(revision__gt=self.at_revision
+                                                 ).order_by('-revision') or None
         
         #collect the content diff & convert to patch
         current_html = None
-        for change in changesets:
-            if current_html is None:
-                current_html = document_obj.get_html_content()
+        if changesets is not None:
+            for change in changesets:
+                if current_html is None:
+                    current_html = document_obj.get_html_content()
+                    
+                patch = dmp.patch_fromText(change.content_diff)
                 
-            patch = dmp.patch_fromText(change.content_diff)
-            
-            #apply patches to the current content object
-            current_html = dmp.patch_apply(patch, current_html)[0]
-            
-        diffs = dmp.diff_main(current_html, proposed_change, checklines=False)
+                #apply patches to the current content object
+                current_html = dmp.patch_apply(patch, current_html)[0]
+        else:
+            current_html = document_obj.get_html_content()
+        diffs = dmp.diff_main(current_html, self.content, checklines=False)
         return dmp.diff_prettyHtml(diffs)
+    def save(self, force_insert=False, force_update=False):
+        
+        super(QueuedItem, self).save(force_insert, force_update)

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+ {{ object.content|safe }}<br />
+ {{ object.display_diff_html|safe }}
+ 
+{% endblock %}

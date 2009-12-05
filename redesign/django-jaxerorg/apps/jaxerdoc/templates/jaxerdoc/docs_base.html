@@ -31,12 +31,13 @@
                                 <span class="fl comment">{% block type %}{% endblock %}</span>
                                 <span class="fr">
                                     <form action="" method="post">
-                                        <input type="text" class="width-200px" id="doc-search">
-                                        </input><img class="ml-10" src="{{ MEDIA_URL }}images/zoom.png" galleryimg="true"/>
+                                        <input type="text" class="width-200px" id="doc-search"></input>
+										<img class="ml-10" src="{{ MEDIA_URL }}images/zoom.png" galleryimg="true"/>
                                     </form>
                                 </span>
                                 <br class="clearfloat" />
                                 <div class="mt-6" id='wiki-content'>
+                                	{% block message %}{% endblock %}
                                     {% block docbody %}{% endblock %} 
                                 </div>
                             </div>

@@ -83,6 +83,11 @@
 	{% endif %}
 {% endblock %}
 {% block type %}{TYPE:{{classitem.get_ct.name }} }{% endblock %}
+{% block message %} 
+	{% if message %}
+		<div class="{{ message.class }}">{{ message.message }}</div>
+	{% endif %}
+{% endblock %}
 {% block docbody %}
 				<span class="fr" content_type_id="{{ classitem.get_ct_id }}" object_id="{{ classitem.id }}">
 					<a href="{% url jaxerdoc_modify_document ctid=classitem.get_ct_id, objid=classitem.id %}" id="js-wiki-edit-{{ classitem.id }}">edit</a>

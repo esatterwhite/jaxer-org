@@ -11,10 +11,15 @@ urlpatterns = patterns('jaxerdoc.views',
          
     url(r'^(?P<ctid>\d+)-(?P<objid>\d+)/edit/$', 
         'ajax_document_edit',
-         name="jaxerdoc_modify_document"),         
+         name="jaxerdoc_modify_document"),  
+    url(r'^(?P<obj_id>\d+)/$', 
+        'diff_test',
+         name="difference_text"),                
 )
 
-
+urlpatterns += patterns('jaxerdoc.extraviews.moderate',
+    url(r'^queue/moderate/$', 'queue_manager', name="jaxerdoc_queue_moderation"),
+)
 
 urlpatterns += patterns('jaxerdoc.views',
     url(r'^add/parameter/', 'add_parameter_to_object', name='jaxerdoc_search_object_form')                        

@@ -1,0 +1,79 @@
+{% extends "single_col_center.html" %}
+{% load pagination_tags %}
+{% block heading %}Jaxer Wiki Moderation {% endblock %}
+{% block subheading %}
+								{% if MODERATE %}
+								<span class="fl">there {{ queue|pluralize:"is, are" }} {{ queue|length }} Submission{{ queue|pluralize }} awaiting moderation</span>
+								<br class="clearfloat" />
+								{% endif %}
+{% endblock %}
+{% block slab %}
+                                <div class="mt-6 p_all-4 bg-nearblack border-dark">
+                                   <div class="width20 fr">
+                                   		<table class="tbl-list small">
+                                        	<thead>
+                                            	<tr>
+	                                            	<th>Filter Subs.</th>
+                                                   </tr>    	                                            
+                                            </thead>
+                                            <tbody>
+                                            	<tr>
+                                                	<td><a href="#">&gt;&gt; All Submissions</a></td>
+                                                </tr>
+                                            	<tr class="alt">
+                                                	<td><a href="#">&gt;&gt; All Approved</a></td>
+                                                </tr>
+                                            	<tr>
+                                                	<td><a href="#">&gt;&gt; All Denied</a></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                	<div class="width80 mr-4">
+                                    	<div class="p_all-6 bg-light border-dark mb-6">
+                                      <table class="tbl-list align-c mb-4">
+                                            <thead>
+                                                <tr>
+                                                    <th>Editor</th>
+													<th>Document</th>
+                                                    <th>Sub Date</th>
+													<th>Comment</th>
+													<th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            	{% autopaginate queue 10 %}
+                                            	{% for object in queue %}
+                                                <tr class="{% cycle '' 'alt'%} {{ object.moderate|default_if_none:'' }}">
+                                                    <td class="w-100">
+                                                    	{% if objec.editor.get_profile %}
+                                                    	<a href="#">{{ object.editor }}</a>
+														{% else %}
+														{{ object.editor }}
+														{% endif %}
+													</td>
+													<td><a href="{{ object.content_object.get_absolute_url }}">{{ object.content_object }}</a></td>
+													<td>{{ object.submit_date|date:"D M Y P" }}</td>
+													<td>
+														{% if object.comment %}
+														<a href="See Comment">See Comment</a>
+														{% else %}
+														No Comment
+														{% endif %}
+													</td>
+													<td>{{ object.moderate|default_if_none:"Awaiting Moderation" }}</td>
+                                                </tr>
+												{% empty %}
+												<div class="empy-area">There is nothing to moderate!</div>
+												{% endfor %}
+				                            </tbody>
+                                      </table>
+                                      </div>
+                                   <div class="bg-deep border-dark p_all-8">
+                                   		{% paginate %}
+                                   </div>                                      
+                                   </div>
+
+                                   <br class="clearfloat" />
+                                </div>
+{% endblock %}
