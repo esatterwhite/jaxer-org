@@ -41,7 +41,7 @@ provides: [MooEditable, MooEditable.Selection, MooEditable.UI, MooEditable.Actio
 
 (function(){
 	
-var blockEls = /^(H[1-6]|P|DIV|ADDRESS|PRE|FORM|TABLE|LI|OL|UL|TD|CAPTION|BLOCKQUOTE|CENTER|DL|DT|DD)$/i;
+var blockEls = /^(H[1-6]|HR|P|DIV|ADDRESS|PRE|FORM|TABLE|LI|OL|UL|TD|CAPTION|BLOCKQUOTE|CENTER|DL|DT|DD)$/i;
 var urlRegex = /^(https?|ftp|rmtp|mms):\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)(:(\d+))?\/?/i;
 
 this.MooEditable = new Class({
@@ -57,10 +57,11 @@ this.MooEditable = new Class({
 		actions: 'bold italic underline strikethrough | insertunorderedlist insertorderedlist indent outdent | undo redo | createlink unlink | urlimage | toggleview',
 		handleSubmit: true,
 		handleLabel: true,
-		baseCSS: 'html{ height: 100%; cursor: text; } body{ font-family: sans-serif; color:#ccc;}',
+		baseCSS: 'html{ height: 100%; cursor: text; } body{ font-family: sans-serif; }',
 		extraCSS: '',
 		externalCSS: '',
-		html: '<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>{BASECSS} {EXTRACSS}</style>{EXTERNALCSS}</head><body>{CONTENT}</body></html>'
+		html: '<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>{BASECSS} {EXTRACSS}</style>{EXTERNALCSS}</head><body>{CONTENT}</body></html>',
+		rootElement: 'p'
 	},
 
 	initialize: function(el, options){
@@ -220,12 +221,21 @@ this.MooEditable = new Class({
 		this.doc.addEvents({
 			mouseup: this.editorMouseUp.bind(this),
 			mousedown: this.editorMouseDown.bind(this),
+			mouseover: this.editorMouseOver.bind(this),
+			mouseout: this.editorMouseOut.bind(this),
+			mouseenter: this.editorMouseEnter.bind(this),
+			mouseleave: this.editorMouseLeave.bind(this),
 			contextmenu: this.editorContextMenu.bind(this),
 			click: this.editorClick.bind(this),
 			dbllick: this.editorDoubleClick.bind(this),
 			keypress: this.editorKeyPress.bind(this),
 			keyup: this.editorKeyUp.bind(this),
-			keydown: this.editorKeyDown.bind(this)
+			keydown: this.editorKeyDown.bind(this),
+			focus: this.editorFocus.bind(this),
+			blur: this.editorBlur.bind(this)
+		});
+		['cut', 'copy', 'paste'].each(function(event){
+			self.doc.body.addListener(event, self['editor' + event.capitalize()].bind(self));
 		});
 		this.textarea.addEvent('keypress', this.textarea.retrieve('mooeditable:textareaKeyListener', this.keyListener.bind(this)));
 		
@@ -250,6 +260,8 @@ this.MooEditable = new Class({
 
 		this.selection = new MooEditable.Selection(this.win);
 		
+		this.oldContent = this.getContent();
+		
 		this.fireEvent('attach', this);
 		
 		return this;
@@ -262,6 +274,16 @@ this.MooEditable = new Class({
 		this.container.dispose();
 		this.fireEvent('detach', this);
 		return this;
+	},
+	
+	editorFocus: function(e){
+		this.oldContent = '';
+		this.fireEvent('editorFocus', [e, this]);
+	},
+	
+	editorBlur: function(e){
+		this.oldContent = this.saveContent().getContent();
+		this.fireEvent('editorBlur', [e, this]);
 	},
 	
 	editorMouseUp: function(e){
@@ -282,6 +304,47 @@ this.MooEditable = new Class({
 		}
 		
 		this.fireEvent('editorMouseDown', [e, this]);
+	},
+	
+	editorMouseOver: function(e){
+		if (this.editorDisabled){
+			e.stop();
+			return;
+		}
+		
+		this.fireEvent('editorMouseOver', [e, this]);
+	},
+	
+	editorMouseOut: function(e){
+		if (this.editorDisabled){
+			e.stop();
+			return;
+		}
+		
+		this.fireEvent('editorMouseOut', [e, this]);
+	},
+	
+	editorMouseEnter: function(e){
+		if (this.editorDisabled){
+			e.stop();
+			return;
+		}
+		
+		if (this.oldContent && this.getContent() != this.oldContent){
+			this.focus();
+			this.fireEvent('editorPaste', [e, this]);
+		}
+		
+		this.fireEvent('editorMouseEnter', [e, this]);
+	},
+	
+	editorMouseLeave: function(e){
+		if (this.editorDisabled){
+			e.stop();
+			return;
+		}
+		
+		this.fireEvent('editorMouseLeave', [e, this]);
 	},
 	
 	editorContextMenu: function(e){
@@ -395,7 +458,45 @@ this.MooEditable = new Class({
 			}
 		}
 		
+		if (Browser.Engine.presto){
+			var ctrlmeta = e.control || e.meta;
+			if (ctrlmeta && e.key == 'x'){
+				this.fireEvent('editorCut', [e, this]);
+			} else if (ctrlmeta && e.key == 'c'){
+				this.fireEvent('editorCopy', [e, this]);
+			} else if ((ctrlmeta && e.key == 'v') || (e.shift && e.code == 45)){
+				this.fireEvent('editorPaste', [e, this]);
+			}
+		}
+		
 		this.fireEvent('editorKeyDown', [e, this]);
+	},
+	
+	editorCut: function(e){
+		if (this.editorDisabled){
+			e.stop();
+			return;
+		}
+		
+		this.fireEvent('editorCut', [e, this]);
+	},
+	
+	editorCopy: function(e){
+		if (this.editorDisabled){
+			e.stop();
+			return;
+		}
+		
+		this.fireEvent('editorCopy', [e, this]);
+	},
+	
+	editorPaste: function(e){
+		if (this.editorDisabled){
+			e.stop();
+			return;
+		}
+		
+		this.fireEvent('editorPaste', [e, this]);
 	},
 	
 	keyListener: function(e){
@@ -455,13 +556,58 @@ this.MooEditable = new Class({
 	},
 
 	setContent: function(newContent){
-		this.doc.body.set('html', newContent);
+		this.doc.body.set('html', this.ensureRootElement(newContent));
 		return this;
 	},
 
 	saveContent: function(){
-		if (this.mode == 'iframe') this.textarea.set('value', this.getContent());
+		if (this.mode == 'iframe'){
+			this.textarea.set('value', this.ensureRootElement(this.getContent()));
+		}
 		return this;
+	},
+	
+	ensureRootElement: function(val){
+		if (this.options.rootElement){
+			var el = new Element('div', {html: val.trim()});
+			var start = -1;
+			var create = false;
+			var html = '';
+			var length = el.childNodes.length;
+			for (i=0; i<length; i++){
+				var childNode = el.childNodes[i];
+				var nodeName = childNode.nodeName;
+				if (!nodeName.test(blockEls) && nodeName !== '#comment'){
+					if (nodeName === '#text'){
+						if (childNode.nodeValue.trim()){
+							if (start < 0) start = i;
+							html += childNode.nodeValue;
+						}
+					} else {
+						if (start < 0) start = i;
+						html += new Element('div').adopt($(childNode).clone()).get('html');
+					}
+				} else {
+					create = true;
+				}
+				if (i == (length-1)) create = true;
+				if (start >= 0 && create){
+					var newel = new Element(this.options.rootElement, {html: html});
+					el.replaceChild(newel, el.childNodes[start]);
+					for (k=start+1; k<=i; k++){ 
+						el.removeChild(el.childNodes[k]);
+						length--;
+						i--;
+						k--;
+					}
+					start = -1;
+					create = false;
+					html = '';
+				}
+			}
+			val = el.get('html').replace(/\n\n/g, '');
+		}
+		return val;
 	},
 
 	checkStates: function(){
@@ -562,16 +708,16 @@ this.MooEditable = new Class({
 					source = source.replace(/<\/(ol|ul)>\s*(?!<(?:p|ol|ul|img).*?>)((?:<[^>]*>)?\w.*)$/g, '</$1><p>$2</p>');
 				}
 
-				source = source.replace(/<br[^>]*><\/p>/g, '</p>');			//remove <br>'s that end a paragraph here.
-				source = source.replace(/<p>\s*(<img[^>]+>)\s*<\/p>/ig, '$1\n'); 	//if a <p> only contains <img>, remove the <p> tags
+				source = source.replace(/<br[^>]*><\/p>/g, '</p>'); // remove <br>'s that end a paragraph here.
+				source = source.replace(/<p>\s*(<img[^>]+>)\s*<\/p>/ig, '$1\n'); // if a <p> only contains <img>, remove the <p> tags
 
 				//format the source
-				source = source.replace(/<p([^>]*)>(.*?)<\/p>(?!\n)/g, '<p$1>$2</p>\n');  	//break after paragraphs
-				source = source.replace(/<\/(ul|ol|p)>(?!\n)/g, '</$1>\n'); 			//break after </p></ol></ul> tags
-				source = source.replace(/><li>/g, '>\n\t<li>'); 				//break and indent <li>
-				source = source.replace(/([^\n])<\/(ol|ul)>/g, '$1\n</$2>');  			//break before </ol></ul> tags
-				source = source.replace(/([^\n])<img/ig, '$1\n<img'); 				//move images to their own line
-				source = source.replace(/^\s*$/g, '');						//delete empty lines in the source code (not working in opera)
+				source = source.replace(/<p([^>]*)>(.*?)<\/p>(?!\n)/g, '<p$1>$2</p>\n'); // break after paragraphs
+				source = source.replace(/<\/(ul|ol|p)>(?!\n)/g, '</$1>\n'); // break after </p></ol></ul> tags
+				source = source.replace(/><li>/g, '>\n\t<li>'); // break and indent <li>
+				source = source.replace(/([^\n])<\/(ol|ul)>/g, '$1\n</$2>'); //break before </ol></ul> tags
+				source = source.replace(/([^\n])<img/ig, '$1\n<img'); // move images to their own line
+				source = source.replace(/^\s*$/g, ''); // delete empty lines in the source code (not working in opera)
 			}
 
 			// Remove leading and trailing BRs
@@ -590,6 +736,11 @@ this.MooEditable = new Class({
 			source = source.replace(/<b\b[^>]*>(.*?)<\/b[^>]*>/gi, '<strong>$1</strong>');
 			source = source.replace(/<i\b[^>]*>(.*?)<\/i[^>]*>/gi, '<em>$1</em>');
 			source = source.replace(/<u\b[^>]*>(.*?)<\/u[^>]*>/gi, '<span style="text-decoration: underline;">$1</span>');
+			source = source.replace(/<strong><span style="font-weight: normal;">(.*)<\/span><\/strong>/gi, '$1');
+			source = source.replace(/<em><span style="font-weight: normal;">(.*)<\/span><\/em>/gi, '$1');
+			source = source.replace(/<span style="text-decoration: underline;"><span style="font-weight: normal;">(.*)<\/span><\/span>/gi, '$1');
+			source = source.replace(/<strong style="font-weight: normal;">(.*)<\/strong>/gi, '$1');
+			source = source.replace(/<em style="font-weight: normal;">(.*)<\/em>/gi, '$1');
 
 			// Replace uppercase element names with lowercase
 			source = source.replace(/<[^> ]*/g, function(match){return match.toLowerCase();});
@@ -616,7 +767,7 @@ this.MooEditable = new Class({
 			source = source.replace(/<\/p>\s*<\/p>/g, '</p>');
 			
 			// Replace <br>s inside <pre> automatically added by some browsers
-			source = source.replace(/<pre>.*?<\/pre>/gi, function(match){
+			source = source.replace(/<pre[^>]*>.*?<\/pre>/gi, function(match){
 				return match.replace(/<br ?\/?>/gi, '\n');
 			});
 
@@ -1074,6 +1225,25 @@ MooEditable.Actions = new Hash({
 		states: {
 			tags: ['b', 'strong'],
 			css: {'font-weight': 'bold'}
+		},
+		events: {
+			beforeToggleView: function(){
+				if(Browser.Engine.gecko){
+					var s = this.textarea.get('value')
+					.replace(/<strong([^>]*)>/gi, '<b$1>')
+					.replace(/<\/strong>/gi, '</b>')
+					this.textarea.set('value',s);
+				}
+			},
+			attach: function(){
+				if(Browser.Engine.gecko){
+					var s = this.textarea.get('value')
+					.replace(/<strong([^>]*)>/gi, '<b$1>')
+					.replace(/<\/strong>/gi, '</b>')
+					this.textarea.set('value',s);
+					this.setContent(s);
+				}
+			}
 		}
 	},
 	
@@ -1085,6 +1255,29 @@ MooEditable.Actions = new Hash({
 		states: {
 			tags: ['i', 'em'],
 			css: {'font-style': 'italic'}
+		},
+		events: {
+			beforeToggleView: function(){
+				if (Browser.Engine.gecko){
+					var s = this.textarea.get('value')
+						.replace(/<embed([^>]*)>/gi, '<tmpembed$1>')
+						.replace(/<em([^>]*)>/gi, '<i$1>')
+						.replace(/<tmpembed([^>]*)>/gi, '<embed$1>')
+						.replace(/<\/em>/gi, '</i>');
+					this.textarea.set('value', s);
+				}
+			},
+			attach: function(){
+				if (Browser.Engine.gecko){
+					var s = this.textarea.get('value')
+						.replace(/<embed([^>]*)>/gi, '<tmpembed$1>')
+						.replace(/<em([^>]*)>/gi, '<i$1>')
+						.replace(/<tmpembed([^>]*)>/gi, '<embed$1>')
+						.replace(/<\/em>/gi, '</i>');
+					this.textarea.set('value', s);
+					this.setContent(s);
+				}
+			}
 		}
 	},
 	
