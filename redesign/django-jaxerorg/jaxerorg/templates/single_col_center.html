@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+        <div id="main">
+            <div class="pt-12">
+                <div class="pt-10 mt-10">
+                    <!-- START MAIN-CONTENT -->
+					<a name="top" id="top"></a>
+                    <div class="width99 p_all-6 rounded bg_nearblack" id="main-content">
+                        <div class="bg-light p_all-6 m_all-2 border-med">
+                            <h1>{% block heading %}{% endblock %}</h1>
+                        </div>
+                        <div class="p_all-4 ml-4 small">
+							{% block subheading %}{% endblock %}
+                        </div>
+                        <div class="bg-light border-med p_all-8 m_all-2" id="slab">
+                            <div class="mb-6 bg-med p_all-6 border-dark">
+                            	{% block slab %}{% endblock %}
+                            </div>
+                            <a href="#top" class="small">top</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- END MAIN CONTENT -->
+            </div>
+        </div>
+{% endblock %}

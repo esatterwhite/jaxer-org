@@ -12,6 +12,7 @@ h3{}
 h4{font-size:16px; font-weight:bold; color:#15A555; border-bottom:1px solid #333; margin-bottom:4px;}
 h5{}
 h6{}
+.align-r{text-align:right}
 .dn{display:none;}
 .white{color:#FFF;}
 .italic{font-style:italic}
@@ -25,12 +26,16 @@ h6{}
 .small, .smoothAnchors{font-size:0.85em; color:#666;}
 .false{color:#FF0000;font-weight:bolder;}
 .true{color:#090;font-weight:bolder;}
+.success, .approve, {background:#15A555;border:2px solid #006600;color:#FFFFFF;font-weight:bold;padding:5px;margin-bottom:6px;}
+.error{border:solid 2px #EF0E0E; color:#FFF; font-weight:bold; padding:5px; background:#B30000; margin-bottom:6px;}
 
 /*
  * Layout CSS Classes
  */
 .w-30{width:30px;}
 .w-50{width:50px;}
+.w-100{width:100px;}
+.width20{width:19%}
 .width30{width:29.999%;}
 .width33{width:32.999%;}
 .width35{width:34.999%;}
@@ -136,7 +141,7 @@ h6{}
 .array, .Array, .object, .Object{color: #498fe4;}
 .function, .Function{}
 .contain{width:960px; margin:0 auto;}
- 
+.empty-area{background:transparent url(img/exclamation.png) no-repeat 1% 50%; padding-left:30px}
 .bg_nearblack, .bg-nearblack{background-color:#111;}
 .bg-deep{background-color:#181818;}
 .bg-med{background-color:#222222;}
@@ -150,28 +155,39 @@ h6{}
 .quote p:first-child, blockquote p:first-child{background:transparent url(img/quote-start.png) no-repeat scroll left top; padding:0 0 10px 30px; }
 #main{ background:url(img/greenbar_shadow_downward.png) top center no-repeat; width:960px; margin:0 auto 20px auto; }
 
-table.tbl-list{display:block; width:99.9%;}
+/*		PAGINATOR STYLES		*/
+#paginator li{ float:left;margin-right:8px; }
+#paginator li a{padding:4px 6px;}
+#paginator span.disabled{color:#444;}
+
+/*		TABLES STYLES		*/
+table.tbl-list{color:#FFF; width:99.9%;}
 table.tbl-list td{padding:6px;}
-table.tbl-list tr:hover, table.tbl-list tr.alt:hover{background:#222;}
+table.tbl-list tbody tr:hover, table.tbl-list tbody tr.alt:hover{background:#222;}
+table.tbl-list tr.approval:hover{background:#215F25 !important;}
+table.tbl-list tr.denial:hover{background:#7C1D1D !important;}
 table.tbl-list tr.alt{background:#181818;border-top: 1px solid #222; border-bottom: 1px solid #222;}
+table.tbl-list th{background:#111; font-size:1.3em;padding:4px;color:#FFF; text-align:center;; font-weight:bold; font-family:"Trebuchet MS", "Arial Black", sans-serif;}
 textarea{background:#111 none repeat scroll 0 0; border:1px solid #444; color:#FFF; margin-bottom:4px; margin-top:4px; padding-left:5px }
 fieldset li{padding:10px; background:#222; border:1px solid #333; padding:10px; }
 fieldset li textarea{background:#111;color:#ccc; width:99%; border: #333 solid 1px}
+
+/*		MODALBOX STYLES*/
 #modalBox{background:url(img/black_bg_50.png) repeat; padding:10px;}
 #modalBox h2{color:#14A554; font-size:20px; font-weight:bold;}
 #modalBox h2.draggable, .draggable{cursor:move;}
 #modalBox fieldset li input.dark_button, .dark_button { background-color: #333; background-image: url(img/jaxer_button_bg_dark.jpg); background-repeat: repeat-x; background-position: left center;border: 1px solid #000; padding:6px; font: 0.8em "Trebuchet MS", Arial, Helvetica, sans-serif; color: #CCC; }
-#modalBox fieldset li input.dark_button:hover, .dark_button:hover  { background-color: #333; background-image: url(img/jaxer_button_bg_dark_hover_alt.jpg); }
-fieldset label{color:#14A554;}
-.button_wrap { padding:1px; background:#333; }
+#modalBox fieldset li input.dark_button:hover, .dark_button:hover  {text-decoration:underline; background-color: #333; background-image: url(img/jaxer_button_bg_dark_hover_alt.jpg); }
 #modalBox #stagewrap{padding:8px; background:#181818;}
 #modalBox #stagecontainer{background:#272727; border:1px solid #333;}
 #header-wrap{background:url(img/top_shadow_upward.png) no-repeat bottom center; height:75px; margin:0 auto; width:960px; position:relative;}
 #header #logo{position:absolute; top:20px; left:1%;}
+
 #menubar{ background:#0E0E0E url(img/secondary_bg_deep.jpg) repeat-y top center; height:80px; border-top: 1px solid #222; }
 #greenbar{background:#084113 url(img/accent_bg_green.png) top center repeat-y; height:40px;}
 #greenbar-wrap{width:960px; background:url(img/top_shadow_downward.png) top center no-repeat; margin:0 auto; height:100%; border-top:1px solid #333;}
-
+fieldset label{color:#14A554;}
+.button_wrap { padding:1px; background:#333; }
 #mainnav {position:absolute; display:block;top:50px; right:0;}
 #menubar #container{width:960px; margin:0 auto; position:relative;}
 #container{height:80px;}
@@ -188,6 +204,8 @@ fieldset label{color:#14A554;}
 #promo-head #controls ul li.on{background:url(img/header_bullet_on.png) no-repeat center center;}
 #scroll-pane #scroll-panel .scroll-item { height: 200px; float: left; width: 245px; padding-top: 5%; }
 #slab p{margin-bottom:8px; text-indent:10px;}
+
+/*		FOOTER STYLES		*/
 #footer #footernav { background: #111111; border-top: 1px solid #333333; font-size:0.83em; }
 #footer { background: #181818; }
 #footer h2 { font: bold large "Arial Black", Arial, Helvetica, sans-serif; color: #FFF; border-bottom: 1px solid #666; }
