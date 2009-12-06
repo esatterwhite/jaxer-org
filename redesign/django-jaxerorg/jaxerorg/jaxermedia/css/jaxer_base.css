@@ -15,6 +15,7 @@ h6{}
 .align-r{text-align:right}
 .dn{display:none;}
 .white{color:#FFF;}
+.red{color:#b30000;}
 .italic{font-style:italic}
 .bold{font-weight:bolder;}
 .clearfloat{clear:both; visibility:hidden;}
@@ -26,7 +27,7 @@ h6{}
 .small, .smoothAnchors{font-size:0.85em; color:#666;}
 .false{color:#FF0000;font-weight:bolder;}
 .true{color:#090;font-weight:bolder;}
-.success, .approve, {background:#15A555;border:2px solid #006600;color:#FFFFFF;font-weight:bold;padding:5px;margin-bottom:6px;}
+.success, .approve {background:#215F25;border:2px solid #006600;color:#FFFFFF;font-weight:bold;padding-top:5px;margin-bottom:6px;}
 .error{border:solid 2px #EF0E0E; color:#FFF; font-weight:bold; padding:5px; background:#B30000; margin-bottom:6px;}
 
 /*
@@ -42,10 +43,13 @@ h6{}
 .width60{width:59.999%;}
 .width63{width:63.999%;}
 .width66{width:65.999%;}
+.width45{width:44.999%;}
+.width49{width:48.999%;}
 .width50{width:49.999%;}
 .width55{width:54.999%;}
 .width70{width:69.999%;}
 .width80{width:79.999%;}
+.width85{width:84.999%;}
 .width90{width:89.999%;}
 .width99{width:99%;}
 .width100{width:100%;}
@@ -100,7 +104,7 @@ h6{}
 .mt-16{margin-top:16px;}
 .mt-18{margin-top:18px}
 .mt-20{margin-top:20px}
-
+.mt-30{margin-top:30px;}
 .mr-2{margin-right:2px;}
 .mr-4{margin-right:4px;}
 .mr-6{margin-right:6px;}
@@ -122,7 +126,8 @@ h6{}
 .mb-6{margin-bottom:6px;}
 .mb-8{margin-bottom:8px;}
 .mb-10{margin-bottom:10px;}
-
+.mb-20{margin-bottom:20px;}
+.mb-30{margin-bottom:30px;}
 .m_all-2{margin:2px;}
 .m_all-4{margin:4px;}
 .m_all-6{margin:6px;}
@@ -141,7 +146,7 @@ h6{}
 .array, .Array, .object, .Object{color: #498fe4;}
 .function, .Function{}
 .contain{width:960px; margin:0 auto;}
-.empty-area{background:transparent url(img/exclamation.png) no-repeat 1% 50%; padding-left:30px}
+.empty-area{background:#181818 url(img/exclamation.png) no-repeat 1% 50%; padding:4px; border:1px solid #333; padding-left:30px; text-align:left;}
 .bg_nearblack, .bg-nearblack{background-color:#111;}
 .bg-deep{background-color:#181818;}
 .bg-med{background-color:#222222;}
@@ -186,7 +191,7 @@ fieldset li textarea{background:#111;color:#ccc; width:99%; border: #333 solid 1
 #menubar{ background:#0E0E0E url(img/secondary_bg_deep.jpg) repeat-y top center; height:80px; border-top: 1px solid #222; }
 #greenbar{background:#084113 url(img/accent_bg_green.png) top center repeat-y; height:40px;}
 #greenbar-wrap{width:960px; background:url(img/top_shadow_downward.png) top center no-repeat; margin:0 auto; height:100%; border-top:1px solid #333;}
-fieldset label{color:#14A554;}
+fieldset label, .label{color:#14A554;}
 .button_wrap { padding:1px; background:#333; }
 #mainnav {position:absolute; display:block;top:50px; right:0;}
 #menubar #container{width:960px; margin:0 auto; position:relative;}
@@ -194,7 +199,7 @@ fieldset label{color:#14A554;}
 #jaxermenu{position:absolute; top:30px; right:0;}
 
 #jaxermenu li a{ padding:10px 6px; margin:0 4px; font-size:14px; color: #FFFFFF; }
-#jaxermenu li a:hover{ background:#111; color:#8AC287 !important; opacity:.7; -moz-border-radius:5px; }
+#jaxermenu li a:hover{background:#111; color:#8AC287 !important; opacity:0.7; -moz-border-radius:5px; }
 #mainnav li, #jaxermenu li{float:left; padding:2px; display:block;}
 #mainnav li a{color:#666; border-left:3px solid transparent; padding:0 4px 0 4px; font-size:11px}
 #mainnav li a:hover, #mainnav li a.on{color:#FFF; border-left:3px solid #006600;}
@@ -221,7 +226,7 @@ fieldset label{color:#14A554;}
 .feature-block img { position: absolute; left: 5px; bottom: 5px; }
 .feature-block h2{color:#FFF; font-size:1.3em; font-weight:bold; font-family:BodoniXT, "Times New Roman", Times, serif;}
 #main-sidebar table  img.avatar { background: #111; padding: 3px; border: 1px solid #333; }
-#main-sidebar h1{ color:#666; font:"Arial Black",sans-serif 22px; border-bottom: 1px solid #333; margin-top: 4px; }
+#main-sidebar h1{ color:#666; font-family:"Arial Black",sans-serif 22px; border-bottom: 1px solid #333; margin-top: 4px; }
 #main-sidebar h2 { color: #666; font: bold medium "Trebuchet MS", Arial, Helvetica, sans-serif; border-bottom: 1px solid #333; }
 
 #footer #bottom-bar { background: #333; border-top: 1px solid #555; line-height:150%; text-align:right; padding:4px;}

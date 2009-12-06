@@ -20,7 +20,11 @@
 					<li><a href="menu">Tutorials</a></li>
 					<li><a href="menu">Developer Guide</a></li>
 					<li><a href="menu">Hosting Guide</a></li>
-					<li><a href="menu">Log In</a></li>
+					{% if user.is_authenticated %}
+					<li><a href="#">Welcome, {{ user.first_name }}</a></li>
+					{% else %}
+					<li><a href="{% url jaxer_login_user %}">Log In</a></li>
+					{% endif %}
 				</ul>
 			</div>
 		</div>
@@ -40,7 +44,7 @@
 			<div id="greenbar-wrap"></div>
 		</div>
 		{% block content %} {% endblock %}
-		<div id="footer">
+		<div id="footer" style="{% block footerstyle %}{% endblock %}">
 			<div id="footernav">
 	            <ul>
 	                <li><a href="#">Home</a></li>
@@ -89,9 +93,9 @@
             <div id="bottom-bar">
             	<div class="">
                     Aptana Network:
-                	<a href="#">aptana.org</a>
-                    <a href="#">radrails.org</a>
-                   <a href="#">activerecordjs.org</a>
+                	<a href="http://www.aptana.org">aptana.org</a>
+                    <a href="http://www.radrails.org">radrails.org</a>
+                    <a href="http://www.activerecordjs.com">activerecordjs.org</a>
                 </div>                 
             </div>
 		</div>

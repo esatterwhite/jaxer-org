@@ -183,7 +183,7 @@ utils.LaunchPad = new Class({
 			closebutton: closebutton
 		});
 		box.inject(document.body);
-		box.setStyle('left', (dim.x / 2) - (box.getSize().x*2 ));
+		box.setStyle('left', (dim.x / 2) - (box.getSize().x/2 ));
 		new Drag(box, {
 			handle:titleBar
 		});
@@ -200,6 +200,7 @@ utils.LaunchPad = new Class({
 		this.options.modalBox.fade('out');
 		this.hide();
 		this.options.modalBox.dispose();
+		this.kill.delay(1500);
 	},
 	show: function () {
 		this.options.modalBox.fade('in');
@@ -271,7 +272,7 @@ utils.AjaxTabToggler = new Class({
 	 *  @
 	 */
 	Implements: [Events, Options, utils.TabToggler],
-//	Extends:TabToggler,
+//	Extends:HitmenTabToggler,
 	options:{
 		tabs:[], // Holder for the DOM Elements so we don't have to traverse the DOM on every click.
 		container:'stats-container' //a DOM element where the results will be placed
@@ -463,7 +464,11 @@ UI.EditMode = new Class({
 		}
 		var send_btn, form_wrap, form, moo, form_set, controls;
 		
-		form = new Element('form',{})
+		form = new Element('form',{
+			method:'post',
+			action:this.options.formURL,
+			id:'document_form'
+		})
 		form_set = new Element('fieldset',{}).inject(form);
 		form_wrap = new Element('ul').inject(form_set);
 		if(this.options.form_url === null){
@@ -492,7 +497,23 @@ UI.EditMode = new Class({
 		
 		controls = new Element('li').inject(form_set, 'bottom');
 		send_btn = new Element('a', {
-			text:"submit"
+			text:"submit",
+			href:"#",
+			'class':'dark_button p_all-6',
+			events:{
+				'click':function(evt){
+					this.options._RTE.saveContent();
+					form.submit();
+//					new Request.JSON({
+//						method:'post',
+//						url:this.options.formURL,
+//						onFailure:function(){},
+//						onSuccess:function(json){
+//							console.log(this)
+//						}
+//					}).send()	
+				}.bind(this)
+			}
 		}).inject(controls);
 	
 	},
@@ -659,48 +680,55 @@ UI.ContentRevealer = new Class({
 window.addEvent('domready', function () {
 	//set up code for elements found on most every page.
 	
-});
-$("js-objectsearch-link").addEvent('click',function(evt){
-    evt.stop();
-    var param = "js-"+evt.target.id.split('-')[1]+"-container";
-    $(param).removeClass('dn');
-    new OverText('object_search',{
-        positionOptions:'padding-left:30px'
-    });
-    new Autocompleter.Request.JSON('object_search', '/search/', {
-        'minLength': 1,
-        'selectMode': 'type-ahead',
-        'postVar': 'searchVal',
-        'tokens': null,
-        'filterSubset': true,
-        'injectChoice': function(token) {
-            var choice = new Element('li');
-            new Element('div', {
-                'html': this.markQueryValue(token.name)
-            }).inject(choice);
-            new Element('span', {
-                'html': token.ct,
-                'class': 'small fl'
-            }).inject(choice);
-            new Element('span', {
-                'html': "<span class='{client}'>client</span>|<span class='{server}'>sever</span>".substitute(token),
-                'class': 'fr compact-text'
-            }).inject(choice);
-            new Element('br', {
-                'class': 'clearfloat'
-            }).inject(choice);
-			new Element('span', {
-				id:'',
-				'class':'dn',
-				text:token.url,
-				ct_id:token.ct_id
-			}).inject(choice);
-			choice.addEvent('click',function(evt){
-				//console.log(token.url);
-				window.location.href = token.url;
-			});
-            this.addChoiceEvents(choice).inject(this.choices)
-        }
-		
-    });
+	
+try {
+		$("js-objectsearch-link").addEvent('click',function(evt){
+	    evt.stop();
+	    var param = "js-"+evt.target.id.split('-')[1]+"-container";
+	    $(param).removeClass('dn');
+	    new OverText('object_search',{
+	        positionOptions:'padding-left:30px'
+	    });
+	    new Autocompleter.Request.JSON('object_search', '/search/', {
+	        'minLength': 1,
+	        'selectMode': 'type-ahead',
+	        'postVar': 'searchVal',
+	        'tokens': null,
+	        'filterSubset': true,
+	        'injectChoice': function(token) {
+	            var choice = new Element('li');
+	            new Element('div', {
+	                'html': this.markQueryValue(token.name)
+	            }).inject(choice);
+	            new Element('span', {
+	                'html': token.ct,
+	                'class': 'small fl'
+	            }).inject(choice);
+	            new Element('span', {
+	                'html': "<span class='{client}'>client</span>|<span class='{server}'>sever</span>".substitute(token),
+	                'class': 'fr compact-text'
+	            }).inject(choice);
+	            new Element('br', {
+	                'class': 'clearfloat'
+	            }).inject(choice);
+				new Element('span', {
+					id:'',
+					'class':'dn',
+					text:token.url,
+					ct_id:token.ct_id
+				}).inject(choice);
+				choice.addEvent('click',function(evt){
+					//console.log(token.url);
+					window.location.href = token.url;
+				});
+	            this.addChoiceEvents(choice).inject(this.choices)
+	        }
+			
+	    });
+	});
+} catch (e) {
+	console.log(e);
+}
+
+
 });
