@@ -8,6 +8,14 @@
 								{% endif %}
 {% endblock %}
 {% block slab %}
+{% if messages %}
+	<div class="success">
+{% for message in messages %}
+	<p>{{ message }}</p>
+{% endfor %}
+	</div>
+{% endif %}
+		
                                 <div class="mt-6 p_all-4 bg-nearblack border-dark">
                                    <div class="width20 fr">
                                    		<table class="tbl-list small">
@@ -18,62 +26,68 @@
                                             </thead>
                                             <tbody>
                                             	<tr>
-                                                	<td><a href="#">&gt;&gt; All Submissions</a></td>
+                                                	<td><a href="{% url jaxerdoc_queue_moderation_filter filter='all' %}">&gt;&gt; All Submissions</a></td>
                                                 </tr>
                                             	<tr class="alt">
-                                                	<td><a href="#">&gt;&gt; All Approved</a></td>
+                                                	<td><a href="{% url jaxerdoc_queue_moderation %}">&gt;&gt; Awaiting Moderation</a></td>
+                                                </tr>												
+                                            	<tr >
+                                                	<td><a href="{% url jaxerdoc_queue_moderation_filter filter='approval' %}">&gt;&gt; All Approved</a></td>
                                                 </tr>
-                                            	<tr>
-                                                	<td><a href="#">&gt;&gt; All Denied</a></td>
+                                            	<tr class="alt">
+                                                	<td><a href="{% url jaxerdoc_queue_moderation_filter filter='denial' %} ">&gt;&gt; All Denied</a></td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 	<div class="width80 mr-4">
                                     	<div class="p_all-6 bg-light border-dark mb-6">
-                                      <table class="tbl-list align-c mb-4">
-                                            <thead>
-                                                <tr>
-                                                    <th>Editor</th>
-													<th>Document</th>
-                                                    <th>Sub Date</th>
-													<th>Comment</th>
-													<th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            	{% autopaginate queue 10 %}
-                                            	{% for object in queue %}
-                                                <tr class="{% cycle '' 'alt'%} {{ object.moderate|default_if_none:'' }}">
-                                                    <td class="w-100">
-                                                    	{% if objec.editor.get_profile %}
-                                                    	<a href="#">{{ object.editor }}</a>
-														{% else %}
-														{{ object.editor }}
-														{% endif %}
-													</td>
-													<td><a href="{{ object.content_object.get_absolute_url }}">{{ object.content_object }}</a></td>
-													<td>{{ object.submit_date|date:"D M Y P" }}</td>
-													<td>
-														{% if object.comment %}
-														<a href="See Comment">See Comment</a>
-														{% else %}
-														No Comment
-														{% endif %}
-													</td>
-													<td>{{ object.moderate|default_if_none:"Awaiting Moderation" }}</td>
-                                                </tr>
-												{% empty %}
-												<div class="empy-area">There is nothing to moderate!</div>
-												{% endfor %}
-				                            </tbody>
-                                      </table>
-                                      </div>
+	                                      <table class="tbl-list align-c mb-4">
+	                                            <thead>
+	                                                <tr>
+	                                                    <th>Editor</th>
+														<th>Document</th>
+	                                                    <th>Sub Date</th>
+														<th>Comment</th>
+														<th>Status</th>
+	                                                </tr>
+	                                            </thead>
+	                                            <tbody>
+	                                            	{% autopaginate queue 10 %}
+	                                            	{% for object in queue %}
+	                                                <tr class="{% cycle '' 'alt'%} {{ object.moderate|default_if_none:'' }}">
+	                                                    <td class="w-100">
+	                                                    	{% if objec.editor.get_profile %}
+	                                                    	<a href="#">{{ object.editor }}</a>
+															{% else %}
+															{{ object.editor }}
+															{% endif %}
+														</td>
+														<td><a href="{% url jaxerdoc_moderation_preview  queue_id=object.id %}">{{ object.content_object }}</a></td>
+														<td>{{ object.submit_date|date:"M d 'y P" }}</td>
+														<td>
+															{% if object.comment %}
+															<a href="See Comment">See Comment</a>
+															{% else %}
+															No Comment
+															{% endif %}
+														</td>
+														<td>{{ object.moderate|default_if_none:"Awaiting Moderation"|title }}</td>
+	                                                </tr>
+													{% empty %}
+													<tr>
+														<td colspan="6">
+															<div class="empty-area">Nothing to see here. Move along!</div>													
+														</td>
+													</tr>
+													{% endfor %}
+					                            </tbody>
+	                                      </table>
+                                        </div>
                                    <div class="bg-deep border-dark p_all-8">
                                    		{% paginate %}
                                    </div>                                      
                                    </div>
-
                                    <br class="clearfloat" />
                                 </div>
 {% endblock %}

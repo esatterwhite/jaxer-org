@@ -18,7 +18,10 @@ urlpatterns = patterns('jaxerdoc.views',
 )
 
 urlpatterns += patterns('jaxerdoc.extraviews.moderate',
-    url(r'^queue/moderate/$', 'queue_manager', name="jaxerdoc_queue_moderation"),
+    url(r'^queue/moderate/list/(?P<filter>\w+)/$', 'queue_manager', name="jaxerdoc_queue_moderation_filter"),
+    url(r'^queue/moderate/list/$', 'queue_manager', name="jaxerdoc_queue_moderation"),
+    url(r'^queue/moderate/(?P<queue_id>\d+)/$', 'moderate_queue', name="jaxerdoc_moderation_preview"),
+    url(r'^queue/moderate/(?P<queue_id>\d+)/difference/$', 'show_difference', name="jaxerdoc_moderation_difference"),    
 )
 
 urlpatterns += patterns('jaxerdoc.views',

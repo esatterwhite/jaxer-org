@@ -89,6 +89,9 @@ class StandardDocumentModel(SelfAwareModel):
         changeset = self.changes.get(version=revision)
         changeset.reapply(author)
         
+    def preview_at(self, revision):
+        changeset = self.changes.get(version=revision)
+        return changeset.see_item_at_version(revision)     
     def latest_changeset(self):
         '''DOCSTRINGS'''
         try:
@@ -128,7 +131,7 @@ class StandardDocumentModel(SelfAwareModel):
         from jaxerhotsauce.utils import make_difPatch
         diff_text = make_difPatch(self.get_html_content(), old_content)
         change =    ChangeSet.objects.create(content_diff=diff_text, 
-                                      content_type=self.content_type, 
+                                      content_type=self.get_ct(), 
                                       object_id=self.id, 
                                       comment=comment,
                                       old_name=old_name,
@@ -439,6 +442,14 @@ class QueuedItem(models.Model):
             current_html = document_obj.get_html_content()
         diffs = dmp.diff_main(current_html, self.content, checklines=False)
         return dmp.diff_prettyHtml(diffs)
+    def is_moderated(self):
+        return not self.moderate == None
     def save(self, force_insert=False, force_update=False):
         
         super(QueuedItem, self).save(force_insert, force_update)
+    
+    class Meta:
+        ordering = ('submit_date',)
+        permissions = (
+               ('can_moderate', 'Can Moderate Docs'),
+        )

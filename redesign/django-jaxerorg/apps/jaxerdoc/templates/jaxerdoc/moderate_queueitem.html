@@ -1,0 +1,83 @@
+{% extends "single_col_center.html" %}
+{% block scripts %}
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/lighter/Lighter.js" ></script>
+{% endblock %}
+{% block heading %}{{ queueitem.content_object }}{% endblock %}
+{% block subheading %}
+<a href="{% url jaxerdoc_moderation_difference queue_id=queueitem.id %}" id="js-wiki-difference">see difference</a>
+{% endblock %}
+{% block slab %}
+<div class="bg-light p_all-4 border-med">
+	<div class="fl width49 p_all-2">
+		{{ queueitem.content_object.get_html_content|safe }}
+	</div>
+	<div class="fr width49 p_all-2">
+		{{ queueitem.content|safe }}
+	</div><br class="clearfloat" />
+	{% if queueitem.is_moderated %}
+		<fieldset>
+			<ul>		
+				<li><span class="label">Status:</span> {{ queueitem.get_moderate_display }}</li>			
+				<li><span class="label">Reason:</span> {{ queueitem.mod_reason }}</li>
+			</ul>
+		</fieldset>	
+	{% else %}
+	<form action="" method="post">
+		<fieldset>
+			<ul>
+				{{ form.as_ul }}		
+				<li>
+					<span class="button_wrap">
+						<input class="dark_button" type="submit" value="submit" />
+					</span>
+				</li>			
+			</ul>
+		</fieldset>
+	</form>
+	{% endif %}
+</div>
+{% endblock %}
+{% block extrascripts %}	
+		<script src="{{ MEDIA_URL}}js/moocheck.js"></script>	
+		<script type="text/javascript">
+			window.addEvent('domready', function(){
+				$$('pre').light({ 
+					altLines: "hover",
+					mode:'ol',
+					indent:3
+				});
+				$('js-wiki-difference').addEvent('click',function(evt){
+					evt.stop();
+					var req = new Request.HTML({
+						url:evt.target.href,
+						method:'get',
+						onSuccess:function(rTree, rEls, rHTML, rScripts){
+							var pad = new utils.LaunchPad({
+								titleBar:"Proposal Difference",
+								stage:rHTML
+							});
+							pad.showBox();
+							var set = new Element('fieldset', {
+								'class':'mt-8'
+							}).inject('stage', 'bottom');
+							var item = new Element('li').inject(set);
+							var closeBtn = new Element('a', {
+								'text':'Close',
+								'class':'dark_button',
+								events:{
+									'click':function(e){
+										pad.hideBox();
+									}.bind(this)
+								}
+							}).inject(item);
+							new Element('br',{
+								'class':'clearfloat'
+							}).inject('stage', 'bottom');
+						}
+					}).send();
+				});
+			})
+		</script>		
+{% endblock %}
+
+	

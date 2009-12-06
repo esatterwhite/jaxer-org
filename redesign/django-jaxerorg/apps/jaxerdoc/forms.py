@@ -29,10 +29,10 @@ class GenericEditForm(forms.ModelForm):
     object_id =    forms.CharField(widget=fields.HiddenInput())
     at_revision =  forms.CharField(widget=fields.HiddenInput())
     content =      forms.CharField(widget=forms.Textarea(attrs={'rows':'30'}))
-   
+    comment =      forms.CharField(widget=forms.TextInput(attrs={'class':'width100'}))
     class Meta:
         model = QueuedItem
-        exclude = ('moderate','submit_date')
+        exclude = ('moderate','submit_date','mod_reason')
 class QueueModerationForm(forms.ModelForm):
     '''
         This form is for use by documentation moderators to approve/deny
@@ -42,13 +42,16 @@ class QueueModerationForm(forms.ModelForm):
     content_type = forms.ModelChoiceField(ContentType.objects.all(), widget=fields.HiddenInput())
     object_id =    forms.CharField(widget=fields.HiddenInput())
     at_revision =  forms.CharField(widget=fields.HiddenInput())
-    content =      forms.CharField(widget=forms.Textarea(attrs={'rows':'30'}))
-    moderate =     forms.CharField(widget=forms.RadioSelect(choices=MODERATION_OPTIONS, attrs={'class':'fl'}))
-    
+    moderate =     forms.CharField(widget=forms.RadioSelect(choices=MODERATION_OPTIONS))
+    mod_reason =   forms.CharField(label="Mod Explaination",widget=forms.TextInput(attrs={'class':'width100'}))
     class Meta:
         model = QueuedItem
-        
+        # we don't want to moderator to edit the content
+        # just moderate it
+        exclude = ('editor', 'content', 'submit_date', 'comment')
     def save(self):
+        import pdb
+        pdb.set_trace()
         '''
             Queued items are only intended to be moderated once, so we
             want to check to see if the moderate field is not NULL.
@@ -59,21 +62,31 @@ class QueueModerationForm(forms.ModelForm):
         if self.instance.id is None:
             return False
         else:
-            moderated = self.instance.modaerate
-            
-        
-        if moderated is None:
-            # if moderated is None
-            # we want to apply the edit to the item
-            # and create a changeset for the item.
-            
-            # update the instance
-            super(QueueModerationForm, self).save()
-            pass
-        else:
-            pass
-            # if moderated is not None
-            # it has already been moderated and we 
-            # do not want to do anything!
-            super(QueueModerationForm,self).save()
+            # we have an unmoderated queue objec
+            mod_decision = self.cleaned_data['moderate']
+            if mod_decision == 'approval':
+                from diff_match_patch.diff_match_patch import diff_match_patch
+                _dmp = diff_match_patch()
+                current_doc = self.instance.content_object
+                old_html = current_doc.get_html_content()
+                current_doc.content = self.instance.content
+                
+                # save the HTML to the document
+                current_doc.save()
+                #make revision
+                current_doc.make_new_revision(old_html, 
+                                              current_doc.name, 
+                                              self.instance.comment, 
+                                              self.instance.editor)
+                # save plain text for search
+                current_doc.make_indexable()
+                # save the queue item
+                super(QueueModerationForm, self).save()
+                
+                
+            else:
+                # if the decision was a denial
+                # just save the changes to the queue object
+                
+                super(QueueModerationForm, self).save()
         
