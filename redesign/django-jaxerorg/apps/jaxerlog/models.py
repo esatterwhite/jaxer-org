@@ -3,13 +3,13 @@ from django.utils.encoding import smart_unicode
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
-from jaxerlog.managers import MemberLogManager
+from jaxerlog.managers import UserLogManager
 
 LOG_ADDITION = 1
 LOG_CHANGE = 2
 LOG_DELETION = 3
 
-class MemberLogEntry(models.Model):
+class UserLogEntry(models.Model):
     '''gives the ability to effectivly track any objects on your site'''
     action_time = models.DateTimeField('Action Time', auto_now=True)
     member = models.ForeignKey(User)
@@ -18,7 +18,7 @@ class MemberLogEntry(models.Model):
     action_flag = models.PositiveSmallIntegerField('Action Flag')
     change_message = models.TextField('Action Message', blank=True)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    objects = MemberLogManager()
+    objects = UserLogManager()
     
     def __repr__(self):
         '''representation'''

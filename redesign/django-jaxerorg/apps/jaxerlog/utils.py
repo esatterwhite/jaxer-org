@@ -6,10 +6,10 @@ def log_addition(request, obj, message ):
     """
     Log that an object has been successfully added. 
     
-    The default implementation creates an MemberLogEntry object.
+    The default implementation creates an UserLogEntry object.
     """
-    from jaxerlog.models import MemberLogEntry, LOG_ADDITION 
-    MemberLogEntry.objects.log_action(
+    from jaxerlog.models import UserLogEntry, LOG_ADDITION 
+    UserLogEntry.objects.log_action(
         user_id         = request.user.pk, 
         content_type_id = ContentType.objects.get_for_model(obj).pk,
         object_id       = obj.pk,
@@ -21,10 +21,10 @@ def log_change(request, obj, message):
     """
     Log that an object has been successfully changed. 
     
-    The default implementation creates an MemberLogEntry object.
+    The default implementation creates an UserLogEntry object.
     """
-    from jaxerlog.models import MemberLogEntry, LOG_CHANGE
-    MemberLogEntry.objects.log_action(
+    from jaxerlog.models import UserLogEntry, LOG_CHANGE
+    UserLogEntry.objects.log_action(
         user_id         = request.user.pk, 
         content_type_id = ContentType.objects.get_for_model(obj).pk, 
         object_id       = obj.pk, 
@@ -38,10 +38,10 @@ def log_deletion( request, obj, message):
     object is deleted, it might no longer be safe to call *any* methods
     on the object, hence this method getting object_repr.
     
-    The default implementation creates an aMemberLogEntry object.
+    The default implementation creates an aUserLogEntry object.
     """
-    from jaxerlog.models import MemberLogEntry, LOG_DELETION
-    MemberLogEntry.objects.log_action(
+    from jaxerlog.models import UserLogEntry, LOG_DELETION
+    UserLogEntry.objects.log_action(
         user_id          = request.user.pk, 
         content_type_id = ContentType.objects.get_for_model(obj).pk, 
         object_id       = obj.pk, 
@@ -79,7 +79,7 @@ def redirect(obj, post_save_redirect=None):
             " method on the Model.")
         
 def remove_logs_for_object(obj):
-    from jaxerlog.models import MemberLogEntry
+    from jaxerlog.models import UserLogEntry
     object_type_id = ContentType.objects.get_for_model(obj).pk
-    logs = MemberLogEntry.objects.filter(content_type__pk = object_type_id).filter(object_id = obj.pk)
+    logs = UserLogEntry.objects.filter(content_type__pk = object_type_id).filter(object_id = obj.pk)
     logs.delete()
