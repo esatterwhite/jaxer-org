@@ -8,7 +8,6 @@ class MooEditor(forms.Textarea):
         return super(MooEditor, self).__init__(attrs)
     
     def render (self, name, value, attrs=None):
-
         rendered = super(MooEditor, self).render(name,value,attrs)
         return rendered + ('''<script type="text/javascript">
                                     var MEDIA_URL = '%s';
