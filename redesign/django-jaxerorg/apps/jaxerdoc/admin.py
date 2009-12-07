@@ -1,5 +1,6 @@
 from django.contrib import admin
-from jaxerdoc.models import JavascriptObject, ClassItem, Function, JaxerNameSpace, Property, Parameter
+from jaxerdoc.models import JavascriptObject, ClassItem, Function, JaxerNameSpace,\
+Property, Parameter, FunctionalityGroup
 from django.contrib.contenttypes import generic
 #inline definitions
 class AdminMethodInline(generic.GenericStackedInline):
@@ -99,6 +100,7 @@ class AdminParameterModel(admin.ModelAdmin):
     inlines = [AdminPropertyInline, ]
     list_display = ('name', 'id')
 class AdminPropertyModel(admin.ModelAdmin):
+    inlines = [AdminPropertyInline,]
     list_display = ('name', 'id')
     
 admin.site.register(JavascriptObject, AdminJavaScriptObject)
@@ -107,3 +109,4 @@ admin.site.register(JaxerNameSpace, AdminJaxerNameSpace)
 admin.site.register(Property, AdminPropertyModel)
 admin.site.register(Function, AdminFunctionModel)
 admin.site.register(Parameter, AdminParameterModel)
+admin.site.register(FunctionalityGroup)

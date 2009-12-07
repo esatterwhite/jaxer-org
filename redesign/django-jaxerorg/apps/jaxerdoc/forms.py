@@ -16,7 +16,6 @@ class AddParameterForm(forms.ModelForm):
         model = Parameter
 
 class GenericEditForm(forms.ModelForm):
-    from jaxerdoc.models import MODERATION_OPTIONS
     '''
         this is a generic form that should be used when submitting
         an edit to a wiki-able item. The only visible item will be the content
@@ -29,7 +28,7 @@ class GenericEditForm(forms.ModelForm):
     object_id =    forms.CharField(widget=fields.HiddenInput())
     at_revision =  forms.CharField(widget=fields.HiddenInput())
     content =      forms.CharField(widget=forms.Textarea(attrs={'rows':'30'}))
-    comment =      forms.CharField(widget=forms.TextInput(attrs={'class':'width100'}))
+    comment =      forms.CharField(widget=forms.TextInput(attrs={'class':'width100'}), required=False)
     class Meta:
         model = QueuedItem
         exclude = ('moderate','submit_date','mod_reason')
@@ -50,8 +49,6 @@ class QueueModerationForm(forms.ModelForm):
         # just moderate it
         exclude = ('editor', 'content', 'submit_date', 'comment')
     def save(self):
-        import pdb
-        pdb.set_trace()
         '''
             Queued items are only intended to be moderated once, so we
             want to check to see if the moderate field is not NULL.

@@ -9,6 +9,7 @@ from diff_match_patch.diff_match_patch import diff_match_patch
 from jaxerdoc.managers import Manager, CustomObjectManager, GlobalFunctionManager, UnmanagedQueItemManager
 from jaxerorg.core.models import JaxerRelease
 from jaxerhotsauce.models import ChangeSet
+from jaxerutils.models import SelfAwareModel
 import datetime
 
 jsobjects =       Q(model__iexact='javascriptobject')
@@ -20,42 +21,26 @@ MODERATION_OPTIONS=(
     ('denial','Deny')
 )
 
-# generic - can go on anything
-class SelfAwareModel(models.Model):
+class FunctionalityGroup(models.Model):
+    ''' 
+        Functionality groups are a broad way to classify the modules of jaxer
+        Because so many different objects can fall into a single category
+        doing related lookups from a category will be much easier that 
+        trying to complile a list of different models who share the same
+        groupd
+        
+        This is a convienece model. 
     '''
-        An Abstract model: models which subclass the SelfAwareModel
-        will have a series of methods that give quick access to that
-        model's meta information:
-        
-        Content Type & it's ID
-        App Label
-        Model Name
-        Class Name
-        
-        The aim is to make working with generic models easier from a
-        template as generic relations offer a good deal of information
-        about the related object, but accessing information about the 
-        target object/model itself can be frustrating.
-        
-        Way to add Standarized functionality with out changing model strucure
-    '''
-    def get_ct(self):
-        return ContentType.objects.get_for_model(self)
+    title =          models.CharField(_('Title'), max_length=100, 
+                                      unique=True, blank=False)
+    description =    models.TextField(_('Description'), blank=False)
     
-    def get_ct_id(self):
-        return self.get_ct().id
-    
-    def get_app_label(self):
-        return self.get_ct().app_label
-    
-    def get_model_name(self):
-        return self.get_ct().model
-    
-    def get_class_name(self):
-        return self._meta.verbose_name
-        
+    def __unicode__(self):
+        return self.title
     class Meta:
-        abstract = True    
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+        ordering = ('title',)
         
 class StandardDocumentModel(SelfAwareModel):
     '''
@@ -64,9 +49,9 @@ class StandardDocumentModel(SelfAwareModel):
     '''
     editor =         models.ForeignKey(User)
     name =           models.CharField(_('Name'), max_length=40, blank=False, unique=False)
+    category =       models.ForeignKey(FunctionalityGroup, blank=True, null=True)
     slug =           models.CharField(max_length=255, editable=False)          
     content =        models.TextField(_('Content'), blank=False, help_text='This will be main content for the document page')
-    date_modified =  models.DateTimeField(default=datetime.datetime.now(), auto_now=True, editable=False)
     # Saved content comes in as HTML text, but we don't want to index html
     # text. When saved, html tags will be stripped and a diference patch will
     # be saved.
@@ -89,9 +74,9 @@ class StandardDocumentModel(SelfAwareModel):
         changeset = self.changes.get(version=revision)
         changeset.reapply(author)
         
-    def preview_at(self, revision):
-        changeset = self.changes.get(version=revision)
-        return changeset.see_item_at_version(revision)     
+    def preview_at(self, version):
+        changeset = self.changes.get(revision=version)
+        return changeset.see_item_at_version(version)     
     def latest_changeset(self):
         '''DOCSTRINGS'''
         try:
@@ -101,6 +86,12 @@ class StandardDocumentModel(SelfAwareModel):
     def current_version(self):
         '''DOCSTRINGS'''
         return self.changeset_set.latest()[0]
+    def get_latest_editor(self):
+        try:
+            editor = self.changes.latest().editor
+        except:
+            editor = self.editor
+        return editor
     def version_number(self):
         count = self.changes.count()
         if count < 1:
@@ -179,14 +170,12 @@ class StandardDocumentModel(SelfAwareModel):
         
     class Meta:
         abstract = True
-class JaxerCodeSnippet(SelfAwareModel):
-    '''code class'''
-    author =         models.ForeignKey(User)
-    code =           models.TextField()  
-    content_type =   models.ForeignKey(ContentType)
                     
 class Property(StandardDocumentModel):
-    '''property class'''
+    ''' properties are non-executable object associated with objects
+        be aware that a property can be any object type, including
+        another object which may also have properties.
+    '''
     content_type =    models.ForeignKey(ContentType, related_name='propparent')
     object_id =       models.PositiveIntegerField()
     content_object =  generic.GenericForeignKey('content_type', 'content_object')
@@ -195,11 +184,14 @@ class Property(StandardDocumentModel):
     prop_type =       models.ForeignKey(ContentType, related_name='propertytype')
     prop_id =         models.PositiveIntegerField()
     property_object = generic.GenericForeignKey('prop_type', 'prop_id')
+    properties =      generic.GenericRelation('Property')
     required =        models.BooleanField()
     def __unicode__(self):
         return self.name
     def type(self):
         return self.property_object
+    def has_properties(self):
+        return self.properties.count() > 0    
     class Meta:
         verbose_name =        "Property"
         verbose_name_plural = "Properties"
@@ -383,7 +375,10 @@ class ClassItem(Function):
         verbose_name_plural = 'Classes'
         
 class QueuedItem(models.Model):
-    
+    ACTION_FLAGS=(
+        ('edit','Edit'),
+        ('new','Create')
+    )
     ''' when the body of a document is edited, we do not want to to go
         live on the site. The QueuedItem model is a generic item that
         holds a reference to: 
@@ -397,14 +392,34 @@ class QueuedItem(models.Model):
         This is really only for editing the main body of a document.
     '''
     editor =         models.ForeignKey(User)
+    ############################################################
+    # this is the direct link to the object that this queue item
+    # is associated with
     content_type =   models.ForeignKey(ContentType)
     object_id =      models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
+    ############################################################
     submit_date =    models.DateTimeField(_('Submitted'), default=datetime.datetime.now())
-    content =        models.TextField(blank=False)
-    comment =        models.CharField(max_length=400, blank=True)
+    content =        models.TextField(blank=True, null=True)
     at_revision =    models.PositiveIntegerField()
     
+    # edit/create flag
+    action =           models.CharField(max_length=40, choices=ACTION_FLAGS,
+                                        editable=False, blank=False, null=False)
+    
+    # if we are going to let users create new objects, we need to know what 
+    # they are creating ( by type )
+    adding_type =      models.ForeignKey(ContentType, blank=True, null=True, related_name="linkedobject")
+    add_summary =      models.TextField(_('Summary'), help_text="What/why should we add this?")
+    
+    # security hash. If a new object is accepted, the item will be blank
+    # we want to give the user a chance to fill in the page before it goes live
+    # we will create a key and mail it to the user giving them a link
+    # to the page where they are allowed to do 1 edit/save
+    add_key =          models.CharField(max_length=300, editable=False, blank=True)
+    key_expired =      models.BooleanField()
+    comment =        models.CharField(max_length=400, blank=True)
+
     moderate =       models.CharField(max_length=30, choices=MODERATION_OPTIONS, 
                                                       blank=True, null=True)
     mod_reason =     models.CharField(_('Mod Comments'), max_length=300, blank=True, null=True)
@@ -412,6 +427,8 @@ class QueuedItem(models.Model):
     unmanaged =      UnmanagedQueItemManager()
     def __unicode__(self):
         return "edit for %s on revision %s" %(self.content_object, self.at_revision)
+    def review_content(self):
+        return self.content_object.preview_at(self.at_revision)
     def display_diff_html(self):
         # get the content object's HTML
         # get all of its changesets greater than this version number

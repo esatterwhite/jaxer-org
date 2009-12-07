@@ -67,7 +67,7 @@
 														<td>{{ object.submit_date|date:"M d 'y P" }}</td>
 														<td>
 															{% if object.comment %}
-															<a href="See Comment">See Comment</a>
+															<a href="" class="tooltips" title="{{ object.comment }}">See Comment</a>
 															{% else %}
 															No Comment
 															{% endif %}

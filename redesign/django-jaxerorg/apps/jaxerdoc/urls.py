@@ -17,7 +17,7 @@ urlpatterns = patterns('jaxerdoc.views',
          name="difference_text"),                
 )
 
-urlpatterns += patterns('jaxerdoc.extraviews.moderate',
+urlpatterns += patterns('jaxerdoc.wiki_views.moderate',
     url(r'^queue/moderate/list/(?P<filter>\w+)/$', 'queue_manager', name="jaxerdoc_queue_moderation_filter"),
     url(r'^queue/moderate/list/$', 'queue_manager', name="jaxerdoc_queue_moderation"),
     url(r'^queue/moderate/(?P<queue_id>\d+)/$', 'moderate_queue', name="jaxerdoc_moderation_preview"),

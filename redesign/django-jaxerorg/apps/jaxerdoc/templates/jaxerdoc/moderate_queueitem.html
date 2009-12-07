@@ -4,14 +4,24 @@
 {% endblock %}
 {% block heading %}{{ queueitem.content_object }}{% endblock %}
 {% block subheading %}
-<a href="{% url jaxerdoc_moderation_difference queue_id=queueitem.id %}" id="js-wiki-difference">see difference</a>
+<a href="{% url jaxerdoc_moderation_difference queue_id=queueitem.id %}" id="js-wiki-difference" class="mr-10">see difference</a>
+{% if queueitem.comment %}
+<a href="" id="js-wiki-difference" title='{{ queueitem.comment }}' class="tooltips">user comments</a>
+{% endif %}
 {% endblock %}
 {% block slab %}
 <div class="bg-light p_all-4 border-med">
 	<div class="fl width49 p_all-2">
+		<h4>Original Content</h4>
+		{% if queueitem.is_moderated %}
+		{{ queueitem.review_content|safe }}
+		{% else %}
 		{{ queueitem.content_object.get_html_content|safe }}
+		{% endif %}
 	</div>
+	
 	<div class="fr width49 p_all-2">
+		<h4>Proposed Edits</h4>
 		{{ queueitem.content|safe }}
 	</div><br class="clearfloat" />
 	{% if queueitem.is_moderated %}

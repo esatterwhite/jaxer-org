@@ -1,8 +1,5 @@
 {% extends 'jaxerdoc/docs_base.html' %}
-
-
-
-{% block sidebar %}
+				{% block sidebar %}
 					{% with classitem.parameters.all as parameters %}
 					<span class="fr mt-20 small"><a href="edit" id="js-objectsearch-link" title="what type of object is this parameter">edit</a></span>
 					<h1>Class Parameters</h1>
@@ -63,9 +60,12 @@
 						<div class="empty-area">This {{ classitem.get_ct.name }} has no properties</div>
 					{% endif %}
 					{% endwith %}
-{% endblock %}
-{% block docheading %}{% if classitem.namespace.root_namespace %}{{ classitem.namespace.root_namespace.name }}.{% endif %}{% if classitem.namespace.parent_namespace %}{{ classitem.namespace.parent_namespace.name }}.{% endif %}{{ classitem.namespace.name }}.{{ classitem.name }}{% endblock %}
-{% block subheading-left %}
+				{% endblock %}
+				{% block docheading %}
+					{% if classitem.namespace.root_namespace %}
+						{{ classitem.namespace.root_namespace.name }}.{% endif %}{% if classitem.namespace.parent_namespace %}{{ classitem.namespace.parent_namespace.name }}.{% endif %}{{ classitem.namespace.name }}.{{ classitem.name }}
+				{% endblock %}
+				{% block subheading-left %}
 						{{ classitem.name }}( {% for param in classitem.parameters.all %}
 													{% if param.required %}
 														{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>, 
@@ -75,20 +75,21 @@
 													{% endcomment %} 
 													{% endif %}
 												{% endfor %} <a href="{% url jaxerdoc_add_param_to_object classitem.get_ct.id classitem.id %}" class="object">add</a>)
-{% endblock %}
-{% block subheading-right%}
-				Availibity:<a href="#">{{ classitem.availablity.get_short_version }}+</a>
-	{% if classitem.is_depricated %}
-				Depricated <a href="#">{{ classitem.depricated.get_short_version }}+</a>
-	{% endif %}
-{% endblock %}
-{% block type %}{TYPE:{{classitem.get_ct.name }} }{% endblock %}
-{% block message %} 
-	{% if message %}
-		<div class="{{ message.class }}">{{ message.message }}</div>
-	{% endif %}
-{% endblock %}
-{% block docbody %}
+				{% endblock %}
+				{% block subheading-right%}
+					Availibity:<a href="#">{{ classitem.availablity.get_short_version }}+</a>
+				{% if classitem.is_depricated %}
+					Depricated <a href="#">{{ classitem.depricated.get_short_version }}+</a>
+				{% endif %}
+				{% endblock %}
+				{% block type %}{TYPE:{{classitem.get_ct.name }} }{% endblock %}
+				{% block message %} 
+					{% if message %}
+						<div class="{{ message.class }}">{{ message.message }}</div>
+					{% endif %}
+				{% endblock %}
+				
+				{% block docbody %}
 				<span class="fr" content_type_id="{{ classitem.get_ct_id }}" object_id="{{ classitem.id }}">
 					<a href="{% url jaxerdoc_modify_document ctid=classitem.get_ct_id, objid=classitem.id %}" id="js-wiki-edit-{{ classitem.id }}">edit</a>
 				</span>
@@ -100,12 +101,11 @@
 				 {% if methods %}
 				 <h4>Methods</h4>				  
 			    	<div class="p_all-8 bg-nearblack border-light">
-					<table class="tbl-list compact-text">
-						<tbody>
+					<table class="tbl-list compact-text">					
 							{% for method in methods %}	
 							<thead>
 								<tr>
-									<th colspan="4">
+									<th colspan="4" class="compact">
 										<span class="bold italic white">{{ method }}</span> ( {% for param in method.parameters.all %}
 																								{% if param.required %}
 																									{{ param }}: <span class="{{ param.content_object.name }} bold">{{ param.content_object.name }}</span>,
@@ -121,6 +121,7 @@
 									</th>
 								</tr>
 							</thead>
+							<tbody>
 							<tr class="alt">
 								<td colspan="4">
 									{{ method.get_html_content }}
@@ -141,10 +142,10 @@
 					</table>
 				</div>			  
 				 {% else %}
-				 <div class="empty-area">This class has no methods </div>
+				 <div class="empty-area">This class has no methods</div>
 				 {% endif %}
 				{% endwith %}
-				<div class="comact-text mt-10 italic">last edited by <a href="#">{{ classitem.editor }}</a> on ...</div>
+				<div class="comact-text mt-10 italic">last edited by <a href="#">{{ classitem.get_latest_editor }}</a> on {{ classitem.modified|date:"d-m-Y" }}</div>
 				<script type="text/javascript">
 					var em;
 					window.addEvent('domready', function(evt){
@@ -272,4 +273,4 @@
 							};						
 					});
 				</script>
-{% endblock %}
+			{% endblock %}

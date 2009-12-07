@@ -67,9 +67,7 @@ def ajax_document_edit(request, ctid, objid, template_name=None):
             # the client is expecting an HTML fragment
             return HttpResponse(form.as_ul())
     #we are submitting the form via the html <input> element for simplicity's sake
-    else:
-        import pdb
-        pdb.set_trace()    
+    else:  
         if request.POST:
             # we don't pass an instance, becase we are creating a QueuedItem, not a new document item(yet)
             form = GenericEditForm(request.POST)
@@ -89,7 +87,7 @@ def ajax_document_edit(request, ctid, objid, template_name=None):
 
             return direct_to_template(request, template, extra_context=context)
 
-    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    return HttpResponseRedirect(doc.get_absolute_url())
 
 def add_parameter_to_object(request, add_to_id, add_to_ct):
     
@@ -120,7 +118,3 @@ def add_parameter_to_object(request, add_to_id, add_to_ct):
 def diff_test(request, obj_id):
     c = QueuedItem.objects.get(pk=obj_id)
     return render_to_response('jaxerdoc/diff_test.html', {'object':c}, context_instance=RequestContext(request))
-def add_property_to_object(request):
-    pass
-def add_function_to_object(request):
-    pass

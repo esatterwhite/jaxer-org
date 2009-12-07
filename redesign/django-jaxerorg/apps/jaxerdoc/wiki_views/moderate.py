@@ -1,8 +1,7 @@
 from django.utils import simplejson
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
-from django.contrib.contenttypes.models import ContentType
-from jaxerdoc.models import ClassItem, Function, Parameter, Property, JaxerNameSpace, QueuedItem
+from jaxerdoc.models import QueuedItem
 from django.template.context import RequestContext
 from django.views.generic.simple import direct_to_template
 from django.contrib.auth.decorators import login_required, permission_required
@@ -25,7 +24,8 @@ def queue_manager(request, filter=None):
                               {'queue':queue, 'MODERATE':mod},
                               context_instance=RequestContext(request))
     
-def show_difference(request, queue_id):
+def show_difference(request, queue_id, version=None):
+    
     queueitem = QueuedItem.objects.get(pk=queue_id)
     html = queueitem.display_diff_html()
     if request.is_ajax():

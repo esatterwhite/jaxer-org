@@ -3,47 +3,36 @@
 
 
 {% block sidebar %}
-					{% with jaxernamespace.parameters.all as parameters %}
-					<h1>{{ jaxernamespace.get_ct}} Parameters</h1>
-					{% if parameters %}
-					<table class="tbl-list">
-						<tbody>
-							{% for parameter in parameters %}
-							<tr class="{% cycle '' 'alt' %}">
-								<td>
-									<div class="docs-heading">
-										{{ parameter.name }}: <span class="{{ parameter.content_object.name }}">{{ parameter.content_object.name }}</span>
-									</div>
-									<p class="compact-text">
-										{{ parameter.content }}
-									</p> 
-									<div class="compact-text italic mt-4">Required {% if parameter.required %}<img src="{{ MEDIA_URL }}css/img/rdo_on.png" />{% else %}<img src="{{ MEDIA_URL }}css/img/rdo_off.png" />{% endif %}</div>																		
-								</td>
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-					{% else %}
-						<div class="empty-area">This {{ jaxernamespace.get_ct.name }} has no parameters</div>
-					{% endif %}
-					{% endwith %}
 					{% with jaxernamespace.properties.all as properties %}
-                    <h1>Class Properties</h1>
+                    <h1>Object Properties</h1>
 					{% if properties %}
-					<table class="tbl-list">
-						<tbody>
-						{% for property in properties %}
-							<tr class="{% cycle '' 'alt' %}">
-								<td>
-									<div class="docs-heading">
-										{{ property.name }}: <span class="{{ property.property_object.name}}">{{ property.property_object.name}}</span>
-									</div>
-									<p class="compact-text">
-										{{ property.content }}
-									</p></td>
-							</tr>
+					<div>
+					{% for property in properties %}
+						<div class="{% cycle '' 'bg-med' %} mb-4 p_all-6">												
+							<div class="docs-heading">
+								{{ property.name }}: <span class="{{ property.property_object.name }} pos-rel" {% if property.has_properties %}id="js-reveal-control-{{ property.id }}"  style="cursor:pointer {% endif %}">{{ property.property_object.name}}{% if property.has_properties %}<span class="pos-abs ml-4" style="right:-10px"><img src="{{ MEDIA_URL}}/images/white_arrow_down.png" /></span>{% endif %}</span>
+							</div>
+							<p class="compact-text">
+								{{ property.content }}
+							</p>
+						</div>
+						{% if property.has_properties %}
+						<div class="slide" id="js-reveal-content-{{ property.id }}">	
+						{% with property.properties.all as props %}
+						
+						{% if props %}	
+						{% for prop in props %}											
+							<div class="{% cycle 'bg-deep' '' %} p_all-6">
+														
+								<div class="mr-8 fl"><span class="{{ prop.property_object.name }} bold">{{ prop }}:</span></div><div class="fl small">{{ prop.content }}</div><br class="clearfloat" />						
+							</div>					
 						{% endfor %}
-					</table>
+						{% endif %}
+						{% endwith %}																			
+						</div>
+						{% endif %}				
+					{% endfor %}
+					</diV>
 					{% else %}
 						<div class="empty-area">This {{ jaxernamespace.get_ct.name }} has no properties</div>
 					{% endif %}
@@ -69,28 +58,50 @@
 {% endblock %}
 {% block type %}{TYPE:{{jaxernamespace.get_ct.name }} }{% endblock %}
 {% block docbody %}
-				{% with jaxernamespace.classitem_set.all as classes %}
-				{% if classes %}
+				
+				{% if jaxernamespace.jaxernamespace_set.all %}
+				<h2>Namespaces</h2>
+				<div class="mb-6 bg-nearblack border-light">
+					{% for class in jaxernamespace.jaxernamespace_set.all %}
+						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class.get_absolute_url }}">{{ class }}</a></div>
+					{% endfor %}
+				</div>
+				{% else %}
+					{% if jaxernamespace.rootnamespace.all %}
+				<h2>Namespaces</h2>
+				<div class="mb-6 bg-nearblack border-light">
+					{% for class in jaxernamespace.rootnamespace.all %}
+						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class.get_absolute_url }}">{{ class }}</a></div>
+					{% endfor %}
+				</div>
+					{% endif %}
+				{% endif %}				
+				{% if jaxernamespace.classitem_set.all %}
 				<h2>Classes</h2>
 				<div class="mb-6 bg-nearblack border-light">
-					{% for class in classes %}
-						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class }}">{{ class }}</a></div>
+					{% for class in jaxernamespace.classitem_set.all %}
+						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class.get_absolute_url }}">{{ class }}</a></div>
 					{% endfor %}
 				</div>
 				{% endif %}
-				{% endwith %}
-				<p>{{ jaxernamespace.get_html_content|safe}}</p>
+				<span class="fr" content_type_id="{{ jaxernamespace.get_ct_id }}" object_id="{{ jaxernamespace.id }}">
+					<a href="{% url jaxerdoc_modify_document ctid=jaxernamespace.get_ct_id, objid=jaxernamespace.id %}" id="js-wiki-edit-{{ jaxernamespace.id }}" class='mb-4'>edit</a>
+				</span>	
+				<br class="clearfloat" />
+				<div id='js-wiki-content-{{ jaxernamespace.id }}' class=' border-dark mb-6 p_all-4'>							
+					<p>{{ jaxernamespace.get_html_content|safe}}</p>
+				</div>					
 				{% with jaxernamespace.methods.all as methods %}
 				 {% if methods %}
 				 <h4>Methods</h4>
 				  
 				<div class="p_all-8 bg-nearblack border-light">
 					<table class="tbl-list compact-text">
-						<tbody>
+						
 							{% for method in methods %}	
 							<thead>
 								<tr>
-									<th colspan="4">
+									<th colspan="4" class="compact">
 										<span class="bold italic white">{{ method }}</span> ( {% for param in method.parameters.all %}
 																								{% if param.required %}{{ param }}: 
 																								 <span class="{{ param.content_object.name }} bold">{{ param.content_object.name }}</span>,
@@ -106,6 +117,7 @@
 									</th>
 								</tr>
 							</thead>
+							<tbody>
 							<tr class="alt">
 								<td colspan="4">
 									{{ method.get_html_content }}
@@ -132,19 +144,131 @@
 				 {% endif %}
 				{% endwith %}
 				<div class="comact-text mt-10 italic">last edited by <a href="#">{{ jaxernamespace.editor }}</a> on ...</div>
+				<script type='text/javascript'>
+					var em;
+					window.addEvent('domready', function(evt){
+							new UI.ContentRevealer('js-reveal-control');
+							em = new UI.EditMode({
+								MEDIA_URL:'{{ MEDIA_URL}}',
+								formURL:'{% url jaxerdoc_modify_document ctid=jaxernamespace.get_ct_id, objid=jaxernamespace.id %}'							
+							})
+							$$('a[id^=js-wiki-edit]').each(function(el){
+								el.addEvent('click', function(evt){
+									evt.stop();
+									//em.turnOn();
+									em.buildEditor();
+								});
+							});
+								MooEditable.Actions.p = {
+									title:'Paragragh',
+									type:'button',
+									options: {
+										states: {
+											tags: ['p']
+										},
+										mode:'icon'
+									},
+									command: function(name){
+										var argument = '<' + name.name + '>';
+										this.focus();
+										this.execute('formatBlock', false, argument);
+									}
+								};
+								MooEditable.Actions.h2 = {
+									title:'H2',
+									type:'button',
+									options:{
+										mode:'icon'
+									},
+									command: function(name){
+										var argument = '<' + name.name + '>';
+										this.focus();
+										this.execute('formatBlock', false, argument);
+									}
+								};
+				
+								MooEditable.Actions.h4 = {
+									title: 'H4',
+									type: 'button',
+									options: {
+										mode: 'icon'
+									},
+									command: function(name){
+										var argument = '<' + name.name + '>';
+										this.focus();
+										this.execute('formatBlock', false, argument);
+									}
+								};
+								MooEditable.Actions.insertcode={
+									title:"Insert Code",
+									type:"button",
+									options:{
+										mode:'icon',
+										shotcut:'q'
+									},
+									states:{
+										tags:['pre']
+									},
+									command:function(button, e){
+										var codeBox, form, control, submit_btn, wrap, result_obj, node;
+										result_obj = {};
+										codeBox = new utils.LaunchPad();
+										form = new Request.HTML({
+											evalScripts: false,
+											url:'{% url core_ajax_codeform %}',
+											'onFailure': function () {
+												codeBox.showBox({
+													titleBar:"Insert Code",
+													stage:'Problem retriving the insert code form<br />Let someone know!',
+													closeable:true
+												});
+												
+											},
+											'onSuccess': function (responseTree, responseElements, responseHTML) {
+												codeBox.showBox({
+													titleBar:"Insert Code",
+													stage:'',
+													closeable:false
+												});
+												var fset = new Element('fieldset');
+												fset.inject('stage');	
+												fset.set('html', responseHTML);
+												control = new Element('li');
+												wrap = new Element('span').addClass('button_wrap');
+												submit_btn = new Element('a', {
+													href: "#",
+													text: "Insert Code",
+													events: {
+														click: function () {
+															var raw_code, safe_code;
+															raw_code = $('id_code').value;
+															safe_code = raw_code;
+															
+															safe_code = safe_code.replace(/</g,'&lt;')
+															safe_code = safe_code.replace(">", "&gt;");
+															safe_code = safe_code.replace("<", "\&lt;");
+															//safe_code = safe_code.replace("&amp;lt", "&lt;")
+															result_obj = {
+																language:$('id_language').value,
+																syntax: safe_code
+															}
+						                                    if (safe_code !== "") {
+						                                        node = "<pre class='"+ result_obj.language+":twilight'>"+result_obj.syntax+"</pre>";                                    
+						                                        em.insert(node);												
+						                                    }
+															codeBox.hideBox();
+															result_obj = raw_code = safe_code = '';
+														}
+													}
+												}).addClass('dark_button');
+												submit_btn.inject(wrap);
+												wrap.inject(control);
+												control.inject(fset);
+												codeBox.show();
+											}
+										}).send();
+									}
+								};													
+					});
+				</script>				
 {% endblock %}
-<script type='text/javascript'>
-                               new AutoCompleter.Request.Json(id_"param_type", /search/objects/,{
-                                'minLength': 1, // We need at least 1 character
-                                'selectMode': 'type-ahead', // Instant completion
-                                'postVar': 'searchVal',
-                                'tokens': null,
-                                'filterSubset':true,
-                                'injectChoice':function(token){
-                                    new Element('li',{
-                                        'html':token.name
-                                    }).inject(choice);
-                                }
-                                this.addChoiceEvents(choice).inject(this.choices)                           
-                               });
-                          </script>
