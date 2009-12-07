@@ -608,6 +608,7 @@ UI.ContentRevealer = new Class({
 		controller:'',
 		element:'js-reveal-content-',
 		_elements:[], // reverence to the collection of elements we are sliding to prevent repeated DOM traversal
+		_controlers:[],
 		container:'div',
 		selector:'.slide',
 		splitter:'-',
@@ -619,15 +620,27 @@ UI.ContentRevealer = new Class({
 	},
 	/**
 	 * 
-	 * @param {String} The ID of the element used as the button to interact
+	 * @param {String} The common prefix of the IDs of the elements used 
+	 * 					as the button to interact
 	 * 					with the revealable content elements
+	 * 					   EX. if all of your button elements are named:
+	 * 							myButton-1
+	 * 							myButton-2
+	 * 							myButton-3
+	 * 
+	 * 						You would pass myButton
+	 * 						with '-' for the options splitter
+	 * 
+	 * 					The class will look for elements using IDs from the option element
+	 * 					with 
+	 * 					
 	 * @param {Object} The setting options for this class
 	 */
 	initialize:function(control, options){
 		if(options){
 			this.setOptions(options);	
 		}
-		this.options.controller = $(control);
+		this.options.controller = control;
 		
 		this.options._elements = $$(this.options.container+this.options.selector);
 		this.options._elements.each(function(el){
@@ -637,9 +650,13 @@ UI.ContentRevealer = new Class({
 				isClosed:true
 			});
 		}.bind(this));
-		$(this.options.controller).addEvent('click', function(evt){
-			var elementToToggle = $(this.options.element.concat(this.options.controller.id.split('-').getLast()));
-			this.toggle(elementToToggle)
+		this.options._controllers = $$('span[id^='+this.options.controller+"]");
+		this.options._controllers.each(function(el){
+			el.addEvent('click', function(){
+				var elementToToggle = $(this.options.element.concat(el.id.split(this.options.splitter).getLast()));
+				this.toggle(elementToToggle)
+			}.bind(this));
+
 		}.bind(this));
 		
 		//attach events to controller
@@ -678,7 +695,19 @@ UI.ContentRevealer = new Class({
 	}
 });
 window.addEvent('domready', function () {
-	//set up code for elements found on most every page.
+	var tips = new Tips('.tooltips',{
+		className:'bg-nearblack p_all-6 rounded w-200',
+		offset:{
+			'x':40,
+			'y':-20
+		},
+		styles:{
+			opacity:0.6
+		}
+	});
+	tips.addEvent('show',function(tips, el){
+		tips.fade('in');
+	});
 	
 	
 try {
