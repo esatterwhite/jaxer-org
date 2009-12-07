@@ -272,10 +272,10 @@ utils.AjaxTabToggler = new Class({
 	 *  @
 	 */
 	Implements: [Events, Options, utils.TabToggler],
-//	Extends:HitmenTabToggler,
 	options:{
 		tabs:[], // Holder for the DOM Elements so we don't have to traverse the DOM on every click.
-		container:'stats-container' //a DOM element where the results will be placed
+		container:'stats-container', //a DOM element where the results will be placed
+                MEDIA_URL:'http://media.jaxer.org/'
 	},
     initialize: function(){
         var t = $$('div a[id^="ajaxtab-"]');
@@ -337,9 +337,9 @@ utils.AjaxTabToggler = new Class({
 				'url': url,
                 'onRequest':function(){
 				    var cel = new Element('center');
-                    var loader = new Element('img',{'src':'http://media.muskegohitmen.com/css/img/ajax-loader.gif'});
-                    loader.inject(cel);
-                    cel.inject(tContainer);
+                                    var loader = new Element('img',{'src':this.options.MEDIA_URL+'/css/img/ajax-loader.gif'});
+                                    loader.inject(cel);
+                                    cel.inject(tContainer);
                                 },
 				'onSuccess': function(Tree, Elements, HTML, JavaScript){								
                     tContainer.empty();
