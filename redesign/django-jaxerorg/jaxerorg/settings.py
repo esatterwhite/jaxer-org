@@ -12,7 +12,8 @@
 
 DEVLOPMENT_MODE = True
 MAINTENANCE_MODE = False
-
+MYSQLMODE = False
+PGSQLMODE = True
 if DEVLOPMENT_MODE:
     DEBUG = True
     TEMPLATE_DEBUG = True
@@ -24,6 +25,19 @@ else:
     TEMPLATE_DEBUG = False
     TEMPLATE_STRING_IF_INVALID = ''
     SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    
+if MYSQLMODE:
+    DATABASE_ENGINE = 'mysql'  
+    DATABASE_USER = ''
+    DATABASE_PASSWORD = ''
+    DATABASE_OPTIONS = {
+       "init_command": "SET storage_engine=INNODB",
+    }    
+    
+if PGSQLMODE:
+    DATABASE_ENGINE = 'postgresql_psycopg2'
+    DATABASE_USER = ''
+    DATABASE_PASSWORD = ''
   
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
