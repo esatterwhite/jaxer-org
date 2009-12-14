@@ -14,7 +14,7 @@
     </thead>
     <tbody>
 {% for message in message_list %} 
-    <tr class="{% cycle '' 'alt' %}">
+    <tr class="{% cycle '' 'alt' %} align-c">
         <td>{{ message.sender }}</td>
         <td><a href="{{message.get_absolute_url }}">{{ message.subject }}</a></td>
         <td>{{ message.sent_at|date:_("DATETIME_FORMAT") }}</td>
@@ -24,6 +24,6 @@
     </tbody>
 </table>
 {% else %}
-<p>{% trans "No messages." %}</p>
+<div class="empty-area">{% trans "No messages." %}</div>
 {% endif %}  
 {% endblock %}

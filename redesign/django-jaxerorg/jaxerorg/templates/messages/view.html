@@ -14,7 +14,7 @@
     <dt><span class="bold white">{% trans "Date" %}:</span> {{ message.sent_at|date:_("DATETIME_FORMAT")}}</dt>
 	</dl>
 	<div id="mail-message">
-		{{ message.body|linebreaksbr }}
+		{{ message.body|linebreaksbr|safe }}
 	</div>
 	{% ifequal message.recipient.pk user.pk %}
 	<a href="{% url messages_reply message.id %}">{% trans "Reply" %}</a>

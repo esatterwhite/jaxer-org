@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="width30" style="margin:0 auto;">
+	<div class="bg-nearblack rounded p_all-8 mt-30 mb-20 pos-rel">
+		<div class=" bg-light border-dark p_all-4">		
+			<div class="bg-deep p_all-6 border-med ">
+				<center>
+					<img src="{{ MEDIA_URL }}images/header_logo.png" class="pos-abs" alt="logo" width="100px" style="left:35%;top:10px" />
+				</center>
+				{% if form.is_multipart %}
+				<form action="" method="post" id="basicform" enctype="multipart/form-data">
+				{% else %}
+				<form action="" method="post" id="basicform">
+				{% endif %}
+				<fieldset class="mt-20">
+					<ul>
+						{{ form.as_ul }}
+						<li>
+							<input class="dark_button" type="submit" value="Submit" />							
+						</li>
+					</ul>
+				</fieldset>
+				</form>
+				{% if message %}
+					<center><span class="red">{{ message }}</span></center>
+				{% endif %}
+			</div>	
+		</div>	
+	</div>	
+</div>
+{% endblock %}
+{% block footerstyle %}position:absolute;bottom:0;width:100%{% endblock %}
