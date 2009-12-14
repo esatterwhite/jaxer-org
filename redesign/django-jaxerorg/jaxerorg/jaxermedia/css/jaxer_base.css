@@ -171,7 +171,7 @@ table.tbl-list{color:#FFF; width:99.9%;}
 table.tbl-list td{padding:6px;}
 table.tbl-list tbody tr:hover, table.tbl-list tbody tr.alt:hover{background:#222;}
 table.tbl-list tr.approval:hover{background:#215F25 !important;}
-table.tbl-list tr.denial:hover{background:#7C1D1D !important;}
+table.tbl-list tr.denial:hover, .errorlist li{background:#7C1D1D !important;}
 table.tbl-list tr.alt{background:#181818;border-top: 1px solid #222; border-bottom: 1px solid #222;}
 table.tbl-list th{background:#111; font-size:1.3em;padding:4px;color:#FFF; text-align:center;; font-weight:bold; font-family:"Trebuchet MS", "Arial Black", sans-serif;}
 table.tbl-list th.compact{font-size:1em; text-align:left; font-weight:bold;}
