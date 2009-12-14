@@ -1,0 +1,6 @@
+{{ message }}
+
+If you think your submission is of significant value, correct the errors and re-submit!
+
+Thanks
+{{ from.first_name }}

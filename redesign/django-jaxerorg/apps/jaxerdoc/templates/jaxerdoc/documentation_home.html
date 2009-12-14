@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+{% for group in group_list %}
+
+<h4>{{ group }}</h4>
+ {% for ns in group.jaxernamespace_set.all %}
+     <li>{{ns}}</li>
+ {% endfor %}
+{% endfor %}
+{% endblock %}

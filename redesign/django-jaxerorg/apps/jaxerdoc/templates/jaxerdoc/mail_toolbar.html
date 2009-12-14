@@ -1,0 +1,7 @@
+{% load inbox %}
+<ul id="mail">
+	<li><a class="mail-inbox" href="{% url messages_inbox %}">Inbox ({% inbox_count %})</a></li>
+	<li><a class="mail-compose" href="{% url messages_compose %}">Compose</a></li>
+	<li><a class="mail-sent" href="{% url messages_outbox %}">Sent Messages</a></li>
+	<li><a class="mail-trash" href="{% url messages_trash %}">Trash</a></li>
+</ul>

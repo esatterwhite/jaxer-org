@@ -74,7 +74,10 @@
 														[{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>],
 													{% endcomment %} 
 													{% endif %}
-												{% endfor %} <a href="{% url jaxerdoc_add_param_to_object classitem.get_ct.id classitem.id %}" class="object">add</a>)
+													{% if forloop.last %}
+													<a href="{% url jaxerdoc_propose_linked_object param.get_ct_id, classitem.get_ct_id, classitem.pk%}" class="object">add</a>)
+													{% endif %}
+												{% endfor %} 
 				{% endblock %}
 				{% block subheading-right%}
 					Availibity:<a href="#">{{ classitem.availablity.get_short_version }}+</a>

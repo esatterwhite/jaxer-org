@@ -49,7 +49,6 @@ class StandardDocumentModel(SelfAwareModel):
     '''
     editor =         models.ForeignKey(User)
     name =           models.CharField(_('Name'), max_length=40, blank=False, unique=False)
-    category =       models.ForeignKey(FunctionalityGroup, blank=True, null=True)
     slug =           models.CharField(max_length=255, editable=False)          
     content =        models.TextField(_('Content'), blank=False, help_text='This will be main content for the document page')
     # Saved content comes in as HTML text, but we don't want to index html
@@ -311,8 +310,11 @@ class JavascriptObject(StandardDocumentModel):
 class JaxerNameSpace(JavascriptObject):
     #this is a subclass used to organize Jaxer's Namespace Objects
     #apart from the Standard javascript Objects(String, Array, etc)
-    root_namespace =   models.ForeignKey('self', blank=True, null=True, related_name='rootnamespace')
+    root_namespace =   models.ForeignKey('self', blank=True, 
+                                         null=True, related_name='rootnamespace',
+                                         help_text='This should almost always be the Jaxer Namespace')
     parent_namespace = models.ForeignKey('self', blank=True, null=True)
+    category =       models.ForeignKey(FunctionalityGroup, blank=True, null=True)    
     search_name =      models.CharField(max_length=150, editable=False, blank=True)
     objects =          CustomObjectManager()
     availablity =      models.ForeignKey(JaxerRelease, blank=True, null=True, related_name="ns_available")
@@ -373,13 +375,20 @@ class ClassItem(Function):
     class Meta:
         verbose_name = 'Class'
         verbose_name_plural = 'Classes'
-        
+
+# the queueditem is the crux of the documentation
+# it is how both users and moderators dictate the advancement,
+# editing, creation and moderation of the docs.
+
 class QueuedItem(models.Model):
-    ACTION_FLAGS=(
-        ('edit','Edit'),
-        ('new','Create')
-    )
-    ''' when the body of a document is edited, we do not want to to go
+    ''' 
+        The queueditem is the crux of the wiki system within jaxerdoc.
+        This model stores the data about items that have been edited
+        or in the event someone wishes to add new content, the QueuedItem
+        will hold the data about the propsed object and the object it is to
+        be associated with until the new object is/is not created.
+    
+        when the body of a document is edited, we do not want to to go
         live on the site. The QueuedItem model is a generic item that
         holds a reference to: 
         
@@ -391,34 +400,42 @@ class QueuedItem(models.Model):
         
         This is really only for editing the main body of a document.
     '''
+    ACTION_FLAGS=(
+        ('edit','Edit'),
+        ('new','Create')
+    )
+    
     editor =         models.ForeignKey(User)
     ############################################################
     # this is the direct link to the object that this queue item
     # is associated with
-    content_type =   models.ForeignKey(ContentType)
-    object_id =      models.PositiveIntegerField()
+    content_type =   models.ForeignKey(ContentType, blank=True, null=True)
+    object_id =      models.PositiveIntegerField(blank=True, null=True)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     ############################################################
-    submit_date =    models.DateTimeField(_('Submitted'), default=datetime.datetime.now())
+    submit_date =    models.DateTimeField(_('Submitted'), default=datetime.datetime.now(), editable=False)
     content =        models.TextField(blank=True, null=True)
     at_revision =    models.PositiveIntegerField()
     
     # edit/create flag
     action =           models.CharField(max_length=40, choices=ACTION_FLAGS,
-                                        editable=False, blank=False, null=False)
+                                        blank=False, null=False)
     
     # if we are going to let users create new objects, we need to know what 
     # they are creating ( by type )
+    # we don't want an id number or generic FK becuase the object 
+    # will not exist until we approve the creation of it.
+    add_title   =      models.CharField(max_length=200, blank=True)
     adding_type =      models.ForeignKey(ContentType, blank=True, null=True, related_name="linkedobject")
-    add_summary =      models.TextField(_('Summary'), help_text="What/why should we add this?")
+    add_summary =      models.TextField(_('Summary'), help_text="What/why should we add this?", blank=True)
     
     # security hash. If a new object is accepted, the item will be blank
     # we want to give the user a chance to fill in the page before it goes live
     # we will create a key and mail it to the user giving them a link
     # to the page where they are allowed to do 1 edit/save
-    add_key =          models.CharField(max_length=300, editable=False, blank=True)
-    key_expired =      models.BooleanField()
-    comment =        models.CharField(max_length=400, blank=True)
+    add_key =          models.CharField(max_length=300, editable=False, blank=True, null=True)
+    key_expired =      models.BooleanField(editable=False)
+    comment =          models.CharField(max_length=400, blank=True)
 
     moderate =       models.CharField(max_length=30, choices=MODERATION_OPTIONS, 
                                                       blank=True, null=True)
@@ -461,6 +478,16 @@ class QueuedItem(models.Model):
         return dmp.diff_prettyHtml(diffs)
     def is_moderated(self):
         return not self.moderate == None
+    
+    def get_activation_key(self):
+        if self.action == 'new' and self.moderate == "approval":
+            from hashlib import sha224
+            secure_string = '$sha$%s$%s$%s' %( self.adding_type, self.editor.username, self.created )
+            return sha224(secure_string).hexdigest()
+        else:
+            return None
+    def is_new_item(self):
+        return self.action == 'new'
     def save(self, force_insert=False, force_update=False):
         
         super(QueuedItem, self).save(force_insert, force_update)
@@ -468,5 +495,5 @@ class QueuedItem(models.Model):
     class Meta:
         ordering = ('submit_date',)
         permissions = (
-               ('can_moderate', 'Can Moderate Docs'),
+               ('can_moderate_docs', 'Can Moderate Docs'),
         )

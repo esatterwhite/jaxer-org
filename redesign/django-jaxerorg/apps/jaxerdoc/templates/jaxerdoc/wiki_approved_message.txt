@@ -1,0 +1,4 @@
+{{ message }}
+
+We appreciate all of your hard work!
+{{ from.get_full_name }}

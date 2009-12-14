@@ -62,7 +62,8 @@ def ajax_document_edit(request, ctid, objid, template_name=None):
                                             'object_id':objid, 
                                             'content_type':ctid, 
                                             'content':obj.get_html_content(),
-                                            'at_revision':obj.version_number()
+                                            'at_revision':obj.version_number(),
+                                            'action':'edit'
                                             })
             # the client is expecting an HTML fragment
             return HttpResponse(form.as_ul())
@@ -118,3 +119,9 @@ def add_parameter_to_object(request, add_to_id, add_to_ct):
 def diff_test(request, obj_id):
     c = QueuedItem.objects.get(pk=obj_id)
     return render_to_response('jaxerdoc/diff_test.html', {'object':c}, context_instance=RequestContext(request))
+
+def docs_root(request, template_name="jaxerdoc/documentation_home.html"):
+    from jaxerdoc.models import FunctionalityGroup
+    groups = FunctionalityGroup.objects.all()
+    
+    return render_to_response(template_name, {'group_list':groups}, context_instance=RequestContext(request))

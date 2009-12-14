@@ -1,0 +1,55 @@
+{% extends "single_col_center.html" %}
+{% block scripts %}
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/lighter/Lighter.js" ></script>
+{% endblock %}
+{% block heading %}{{ queueitem.add_title }}{% endblock %}
+{% block subheading %}
+{% if queueitem.content_object %}
+	ADD TO: {{ queueitem.content_object }}
+{% else %}
+	this item will not be associated with any other content
+{% endif %}
+{% endblock %}
+{% block slab %}
+<div class="bg-light p_all-4 border-med">
+	<div class=" width99 p_all-4 pl-6 bg-med border-dark mb-6">
+		<h4>Proposed Item</h4>
+		{{ queueitem.add_summary }}
+	</div><br class="clearfloat" />
+	{% if queueitem.is_moderated %}
+		<fieldset>
+			<ul>		
+				<li><span class="label">Status:</span> {{ queueitem.get_moderate_display }}</li>			
+				<li><span class="label">Reason:</span> {{ queueitem.mod_reason }}</li>
+			</ul>
+		</fieldset>	
+	{% else %}
+	<form action="" method="post">
+		<fieldset>
+			<ul>
+				{{ form.as_ul }}		
+				<li>
+					<span class="button_wrap">
+						<input class="dark_button" type="submit" value="submit" />
+					</span>
+				</li>			
+			</ul>
+		</fieldset>
+	</form>
+	{% endif %}
+</div>
+{% endblock %}
+{% block extrascripts %}	
+		<script src="{{ MEDIA_URL}}js/moocheck.js"></script>	
+		<script type="text/javascript">
+			window.addEvent('domready', function(){
+				$$('pre').light({ 
+					altLines: "hover",
+					mode:'ol',
+					indent:3
+				});;
+			})
+		</script>		
+{% endblock %}
+
+	
