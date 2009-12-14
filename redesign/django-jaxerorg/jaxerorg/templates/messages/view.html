@@ -1,0 +1,25 @@
+{% extends "messages/base.html" %} 
+{% load i18n %}
+
+{% block heading %}{% trans "View Message" %}{% endblock %}
+{% block subheading %}
+{% include 'jaxerdoc/mail_toolbar.html' %}
+{% endblock %} 
+
+{% block slab %}
+<div class="bg-deep p_all-6 border-dark">
+	<dl class="message-headers">
+    <dt><span class="bold white">{% trans "Subject" %}:</span> {{ message.subject }}</dt>
+    <dt><span class="bold white">{% trans "Sender" %}:</span> {{ message.sender }}</dt>
+    <dt><span class="bold white">{% trans "Date" %}:</span> {{ message.sent_at|date:_("DATETIME_FORMAT")}}</dt>
+	</dl>
+	<div id="mail-message">
+		{{ message.body|linebreaksbr }}
+	</div>
+	{% ifequal message.recipient.pk user.pk %}
+	<a href="{% url messages_reply message.id %}">{% trans "Reply" %}</a>
+	{% endifequal %}
+	<a href="{% url messages_delete message.id %}">{% trans "Delete" %}</a>
+</div>
+
+{% endblock %}

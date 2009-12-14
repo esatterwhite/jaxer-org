@@ -1,0 +1,24 @@
+{% extends "messages/base.html" %} 
+{% load i18n %}
+
+{% block heading %}{% trans "Compose Message" %}{% endblock %}
+{% block subheading %}
+{% include 'jaxerdoc/mail_toolbar.html' %}
+{% endblock %} 
+
+{% block slab %}
+<form action="" method="post">
+	<fieldset class="full-input">
+		<ul>
+			{{ form.as_ul }}
+		</ul>
+	</fieldset>
+	<fieldset>
+		<ul>
+			<li><input type="submit" value="{% trans "Send" %} &raquo;" class="dark_button"/></li>
+		</ul>
+	</fieldset>
+
+</form>
+
+{% endblock %}
