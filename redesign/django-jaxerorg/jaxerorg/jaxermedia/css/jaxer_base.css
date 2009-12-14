@@ -176,6 +176,7 @@ table.tbl-list tr.alt{background:#181818;border-top: 1px solid #222; border-bott
 table.tbl-list th{background:#111; font-size:1.3em;padding:4px;color:#FFF; text-align:center;; font-weight:bold; font-family:"Trebuchet MS", "Arial Black", sans-serif;}
 table.tbl-list th.compact{font-size:1em; text-align:left; font-weight:bold;}
 textarea{background:#111 none repeat scroll 0 0; border:1px solid #444; color:#FFF; margin-bottom:4px; margin-top:4px; padding-left:5px }
+fieldset.full-input ul li input{width:99.9%;}
 fieldset li{padding:10px; background:#222; border:1px solid #333; padding:10px; }
 fieldset li textarea{background:#111;color:#ccc; width:99%; border: #333 solid 1px}
 
@@ -212,6 +213,15 @@ fieldset label, .label{color:#14A554;}
 #scroll-pane #scroll-panel .scroll-item { height: 200px; float: left; width: 245px; padding-top: 5%; }
 #slab p{margin-bottom:8px; text-indent:10px;}
 
+/*		MAIL STYLES			*/
+#mail li{display:inline; padding:2px 6px;}
+#mail li a{padding-left:25px; margin-right:10px; background:transparent url(img/mail-icons.png)no-repeat}
+#mail li a.mail-inbox{background-position:1px 2px;}
+#mail li a.mail-compose{background-position:1px -15px;}
+#mail li a.mail-sent{background-position:1px -31px;}
+#mail li a.mail-trash{background-position:1px -51px;}
+#mail-message{margin:10px 50px 20px 50px; background:#0d0d0d; border:1px solid #333; padding:6px; font-family:Courier,"Courier New",monospace;}
+dl.message-headers dt{padding:6px; color:#15A555; background-color:#333; border:1px solid #444; font-family:Courier, "Courier New", monospace; margin-bottom:4px;}
 /*		FOOTER STYLES		*/
 #footer #footernav { background: #111111; border-top: 1px solid #333333; font-size:0.83em; }
 #footer { background: #181818; }
