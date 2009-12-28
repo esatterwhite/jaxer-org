@@ -119,7 +119,7 @@
 																												{% for obj in method.returns.all %} <span class="{{ obj.ret_object }}">{{obj}}</span>|{% endfor %}
 																											   {% else %} 
 																												<span class="keyword">void</span>
-																										       {% endif %}
+																										       {% endif %} 
 																								
 									</th>
 								</tr>
@@ -127,7 +127,7 @@
 							<tbody>
 							<tr class="alt">
 								<td colspan="4">
-									{{ method.get_html_content }}
+									{{ method.get_html_content|safe }}
 								</td>
 							</tr>
 							{% for param in method.parameters.all %}			

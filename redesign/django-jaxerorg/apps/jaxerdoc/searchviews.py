@@ -2,11 +2,20 @@ from jaxerdoc.models import ClassItem, JaxerNameSpace, JavascriptObject
 from djapian.indexer import CompositeIndexer
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import simplejson
-import xapian
-import djapian
-
-djapian.load_indexes()
+try:
+    import xapian
+    import djapian
+except ImportError:
+    xapian = None
+    djapian = None
+    
+if djapian:    
+    djapian.load_indexes()
+    
 def ajax_doc_search(request):
+    if xapian is None:
+        result
+        return HttpResponse(simplejson.dumps(result, mimetype="text/javascript"))
     if request.is_ajax():       
         if request.POST:
             try:
@@ -34,7 +43,7 @@ def ajax_doc_search(request):
             except:
                 return HttpResponseBadRequest()
         else:
-            return HttpResponse(simplejson.dumps({'error':True}))
+            return HttpResponse(simplejson.dumps({'error':True}, mimetype="text/javascript"))
     else:
         # can probably change to redirect to a search
         # page view as well

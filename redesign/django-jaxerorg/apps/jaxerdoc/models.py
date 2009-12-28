@@ -34,29 +34,34 @@ class FunctionalityGroup(models.Model):
     title = models.CharField(_('Title'), max_length = 100,
                                       unique = True, blank = False)
     description = models.TextField(_('Description'), blank = False)
-    
-    def __unicode__(self):
-        return self.title
+
     class Meta:
         verbose_name = "Category"
         verbose_name_plural = "Categories"
-        ordering = ('title',)     
+        ordering = ('title',)  
+        
+    def __unicode__(self):
+        return self.title           
 class StandardDocumentModel(SelfAwareModel):
     '''
         The standard document is self away and expects to have a 
         generic relations to a ChangeSet Model via jaxerhotsauce
     '''
     editor = models.ForeignKey(User)
-    name = models.CharField(_('Name'), max_length = 40, blank = False, unique = False)
+    name = models.CharField(_('Name'), max_length = 40, 
+                            blank = False, unique = False)
     slug = models.CharField(max_length = 255, editable = False)          
-    content = models.TextField(_('Content'), blank = False, help_text = 'This will be main content for the document page')
+    content = models.TextField(_('Content'), 
+                               blank = False, 
+                               help_text = 'This will be main content for the document page')
     # Saved content comes in as HTML text, but we don't want to index html
     # text. When saved, html tags will be stripped and a diference patch will
     # be saved.
     #
     # content the plain text is then saved and indexed by Xapian.
-    html_patch = models.TextField(blank = True, null = True, editable = False)
-    
+    html_patch = models.TextField(blank = True, 
+                                  null = True, 
+                                  editable = False)
     
     client_side = models.BooleanField()
     server_side = models.BooleanField()   
@@ -64,9 +69,23 @@ class StandardDocumentModel(SelfAwareModel):
     on_line = models.BooleanField()
     changes = generic.GenericRelation(ChangeSet)    
     
-    
+    class Meta:
+        abstract = True      
+        
+    def save(self, force_insert = False, force_update = False):
+        try:
+            self.slug = self.__unicode__().replace('.', '-')
+        except:
+            from django.template.defaultfilters import slugify
+            self.slug = slugify(self.name)
+        self.make_indexable()
+        
+        super(StandardDocumentModel, self).save(force_insert, force_update)
+        
     def revert_to(self, revision, author = None):
-        '''takes a revision number queries for the changset and returns it '''
+        '''
+        takes a revision number queries for the changset and returns it 
+        '''
         
         #a ChangeSet Instance
         changeset = self.changes.get(version = revision)
@@ -139,7 +158,7 @@ class StandardDocumentModel(SelfAwareModel):
             save the plain text, save the patch as 
             text string save the object 
         '''
-        from         django.template.defaultfilters import striptags
+        from django.template.defaultfilters import striptags
         DMP = diff_match_patch()
         html = self.content
         plain_text = striptags(html)
@@ -156,18 +175,7 @@ class StandardDocumentModel(SelfAwareModel):
             DMP = diff_match_patch()
             patch = DMP.patch_fromText(self.html_patch)
             return DMP.patch_apply(patch, self.content)[0]
-    def save(self, force_insert = False, force_update = False):
-        try:
-            self.slug = self.__unicode__().replace('.', '-')
-        except:
-            from django.template.defaultfilters import slugify
-            self.slug = slugify(self.name)
-        self.make_indexable()
-        
-        super(StandardDocumentModel, self).save(force_insert, force_update)
-        
-    class Meta:
-        abstract = True        
+      
 class Property(StandardDocumentModel):
     ''' properties are non-executable object associated with objects
         be aware that a property can be any object type, including
@@ -186,17 +194,20 @@ class Property(StandardDocumentModel):
     # if a property may be an object which could also have properties! 
     properties = models.ManyToManyField('Property', blank = True, null = True)
     required = models.BooleanField()
+
+    class Meta:
+        verbose_name = "Property"
+        verbose_name_plural = "Properties"
+            
     def __unicode__(self):
         return self.name
+    def get_absolute_url(self):
+        return ""          
     def type(self):
         return self.property_object
     def has_properties(self):
         return self.properties.count() > 0    
-    class Meta:
-        verbose_name = "Property"
-        verbose_name_plural = "Properties"
-    def get_absolute_url(self):
-        return ""        
+  
 #generic can go on anything
 class Parameter(StandardDocumentModel):
     '''
@@ -207,14 +218,23 @@ class Parameter(StandardDocumentModel):
     
     # the type of parameter a function expects can
     # be just about anything
-    js_type = models.ForeignKey(ContentType, limit_choices_to = Q(jsobjects | jsfunction))
+    js_type = models.ForeignKey(ContentType, 
+                                limit_choices_to = Q(jsobjects | jsfunction))
     js_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('js_type', 'js_id')
-    properties = models.ManyToManyField(Property, related_name = "parameterproperty_set", blank = True, null = True)
-    required = models.BooleanField(_('Required'), help_text = _('Is the parameter required?'))
+    properties = models.ManyToManyField(Property, 
+                                        related_name = "parameterproperty_set", 
+                                        blank = True,
+                                        null = True)
+    required = models.BooleanField(_('Required'), 
+                                   help_text = _('Is the parameter required?'))
     
     #the object this parameter is associated with
-    content_type = models.ForeignKey(ContentType, blank = True, null = True, related_name = 'to_function', limit_choices_to = Q(jsobjects | jsfunction | jsclass))
+    content_type = models.ForeignKey(ContentType, 
+                                     blank = True, 
+                                     null = True, 
+                                     related_name = 'to_function', 
+                                     limit_choices_to = Q(jsobjects | jsfunction | jsclass))
     object_id = models.PositiveIntegerField(blank = True, null = True)    
     function_object = generic.GenericForeignKey('content_type', 'object_id')
     
@@ -234,12 +254,19 @@ class Function(StandardDocumentModel):
         case they would be considered global functions
     '''
     example_code = models.TextField(blank = True, null = True)
-    availablity = models.ForeignKey(JaxerRelease, blank = True, null = True, related_name = "available_in")
+    availablity = models.ForeignKey(JaxerRelease, 
+                                    blank = True, 
+                                    null = True, 
+                                    related_name = "available_in")
     
     is_depricated = models.BooleanField()
-    depricated = models.ForeignKey(JaxerRelease, blank = True, null = True, related_name = "deripacted_in")
+    depricated = models.ForeignKey(JaxerRelease, 
+                                   blank = True, 
+                                   null = True, 
+                                   related_name = "deripacted_in")
 
-    is_global = models.BooleanField(_('Global'), help_text = "is this a global function?")
+    is_global = models.BooleanField(_('Global'), 
+                                    help_text = "is this a global function?")
     # this defines the object the function belongs to
     # a function does not have to belong to anything
     # it can be annonymous 
@@ -259,18 +286,21 @@ class Function(StandardDocumentModel):
     return_object = generic.GenericForeignKey('return_type', 'type_id') 
     returns = generic.GenericRelation('JavascriptObject')
     # parameters which make up the function signature
-    parameters = models.ManyToManyField(Parameter, related_name = 'functionparameter_set', blank = True, null = True)
+    parameters = models.ManyToManyField(Parameter, 
+                                        related_name = 'functionparameter_set', 
+                                        blank = True, 
+                                        null = True)
     admin_objects = Manager()
     objects = GlobalFunctionManager()
-    
+    class Meta:
+        verbose_name = "Function"      
     def __unicode__(self):
         return '%s' % self.name
     def get_absolute_url(self):
         return ""
     def get_return_vars(self):
         pass
-    class Meta:
-        verbose_name = "Function"   
+ 
 # to be sub classed
 class JavascriptObject(StandardDocumentModel):
     '''
@@ -278,27 +308,33 @@ class JavascriptObject(StandardDocumentModel):
         Naitive objects would be Array, String
     '''
     # the generic relation of the object is primarily for functions that return more than 1 object
-    js_type = models.ForeignKey(ContentType, blank = True, null = True, related_name = 'returnobject_set')
-    js_id = models.PositiveIntegerField(blank = True, null = True)    
-    content_object = generic.GenericForeignKey('content_type', 'content_object')
+    content_type = models.ForeignKey(ContentType, 
+                                blank = True, 
+                                null = True, 
+                                related_name = 'returnobject_set')
+    object_id = models.PositiveIntegerField(blank = True, null = True)    
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     #for use with inline models only
-    ret_obj_type = models.ForeignKey(ContentType, blank = True, null = True, related_name = 'returntype_set', limit_choices_to = Q(jsobjects | jsclass | jsnamespace))
+    ret_obj_type = models.ForeignKey(ContentType, 
+                                     blank = True, 
+                                     null = True, 
+                                     related_name = 'returntype_set', 
+                                     limit_choices_to = Q(jsobjects | jsclass | jsnamespace))
     ret_obj_id = models.PositiveIntegerField(blank = True, null = True)    
     ret_object = generic.GenericForeignKey('ret_obj_type', 'ret_obj_id')
 
-    naitive = models.BooleanField(help_text = _('Is this a naitive JS Object?'))
+    naitive = models.BooleanField(help_text =_('Is this a naitive JS Object?'))
     properties = models.ManyToManyField(Property, blank = True, null = True)
     methods = models.ManyToManyField(Function, blank = True, null = True)     
 #   admin_objects =  NaitiveObjectManager()
     objects = Manager()
-    
-    def get_absolute_url(self):
-        return ""    
     class Meta:
-        verbose_name = 'Object'
+        verbose_name = 'Object'    
     def __unicode__(self):
         return self.name
+    def get_absolute_url(self):
+        return ""        
     def type(self):
         return "Object"
     def has_properties(self):
@@ -311,12 +347,21 @@ class JaxerNameSpace(JavascriptObject):
     root_namespace = models.ForeignKey('self', blank = True,
                                          null = True, related_name = 'rootnamespace',
                                          help_text = 'This should almost always be the Jaxer Namespace')
-    parent_namespace = models.ForeignKey('self', blank = True, null = True)
+    parent_namespace = models.ForeignKey('self', 
+                                         blank = True, 
+                                         null = True)
     category = models.ForeignKey(FunctionalityGroup, blank = True, null = True)    
-    search_name = models.CharField(max_length = 150, editable = False, blank = True)
+    search_name = models.CharField(max_length = 150, 
+                                   editable = False, blank = True)
     objects = CustomObjectManager()
-    availablity = models.ForeignKey(JaxerRelease, blank = True, null = True, related_name = "ns_available")
-    depricated = models.ForeignKey(JaxerRelease, blank = True, null = True, related_name = "ns_deripacted")
+    availablity = models.ForeignKey(JaxerRelease, 
+                                    blank = True, 
+                                    null = True, 
+                                    related_name = "ns_available")
+    depricated = models.ForeignKey(JaxerRelease, 
+                                   blank = True, 
+                                   null = True, 
+                                   related_name = "ns_deripacted")
     is_depricated = models.BooleanField()   
     
     class Meta:
@@ -334,49 +379,62 @@ class JaxerNameSpace(JavascriptObject):
         
     @permalink
     def get_absolute_url(self):
-        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 'ctid':self.get_ct_id(), 'objid':self.id})
+        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 
+                                                      'ctid':self.get_ct_id(), 
+                                                      'objid':self.id})
         
     def save(self, force_insert = False, force_update = False):
         self.search_name = self.__unicode__()
         super(JaxerNameSpace, self).save(force_insert, force_update)   
-class ClassItem(Function):
+        
+class ClassItem(StandardDocumentModel):
     
     '''
        ClassItem reprsents class which resideds inside of a namespace
        the name classitem was used to prevent naming conflicts
        
        Javascript does not have classes, they are actually functions
+       We cannot subclass the Function class, as it would violate
+       django's DB contstraints setup
        Treated as objects - 
     '''
     namespace = models.ForeignKey(JaxerNameSpace)
+    example_code = models.TextField(blank = True, null = True)
+    availablity = models.ForeignKey(JaxerRelease, blank = True, null = True, related_name = "classavailability")
+    
+    is_depricated = models.BooleanField()
+    depricated = models.ForeignKey(JaxerRelease, blank = True, null = True, related_name = "classdeprication")
+    parameters = models.ManyToManyField(Parameter, related_name = 'classparameter_set', blank = True, null = True)
     methods = models.ManyToManyField(Function, related_name = "classmethod_set", blank = True, null = True)  
     properties = models.ManyToManyField(Property, related_name = "classproperty_set", blank = True, null = True)
     search_name = models.CharField(max_length = 150, editable = False, blank = True)
-    
+
+    class Meta:
+        verbose_name = 'Class'
+        verbose_name_plural = 'Classes'
+            
     def __unicode__(self):
-        return ".".join([self.namespace.__unicode__(), self.name])
+        return ".".join([self.namespace.__unicode__(), self.name])    
+    @permalink
+    def get_absolute_url(self):
+        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 'ctid':self.get_ct_id(), 'objid':self.id})
+    def save(self, force_insert = False, force_update = False):
+        self.search_name = self.__unicode__()
+        super(ClassItem, self).save(force_insert, force_update)    
     def class_name(self):
         return self.__unicode__()
     def type(self):
         return "%s Instance" % self.__unicode__()
     def has_properties(self):
         return self.properties.count() > 0
-    @permalink
-    def get_absolute_url(self):
-        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 'ctid':self.get_ct_id(), 'objid':self.id})
+    def has_methods(self):
+        return self.methods.count() > 0
+    def has_parameters(self):
+        return self.parameters.count() > 0
     
-    def save(self, force_insert = False, force_update = False):
-        self.search_name = self.__unicode__()
-        super(ClassItem, self).save(force_insert, force_update)
-
-    class Meta:
-        verbose_name = 'Class'
-        verbose_name_plural = 'Classes'
-
 # the queueditem is the crux of the documentation
 # it is how both users and moderators dictate the advancement,
 # editing, creation and moderation of the docs.
-
 class QueuedItem(models.Model):
     ''' 
         The queueditem is the crux of the wiki system within jaxerdoc.
@@ -438,6 +496,15 @@ class QueuedItem(models.Model):
     mod_reason = models.CharField(_('Mod Comments'), max_length = 300, blank = True, null = True)
     objects = Manager()
     unmanaged = UnmanagedQueItemManager()
+    
+    class Meta:
+        ordering = ('submit_date',)
+        permissions = (
+               ('can_moderate_docs', 'Can Moderate Docs'),
+        )    
+    def save(self, force_insert = False, force_update = False):
+        
+        super(QueuedItem, self).save(force_insert, force_update)
     def __unicode__(self):
         return "edit for %s on revision %s" % (self.content_object, self.at_revision)
     def review_content(self):
@@ -484,12 +551,3 @@ class QueuedItem(models.Model):
             return None
     def is_new_item(self):
         return self.action == 'new'
-    def save(self, force_insert = False, force_update = False):
-        
-        super(QueuedItem, self).save(force_insert, force_update)
-    
-    class Meta:
-        ordering = ('submit_date',)
-        permissions = (
-               ('can_moderate_docs', 'Can Moderate Docs'),
-        )

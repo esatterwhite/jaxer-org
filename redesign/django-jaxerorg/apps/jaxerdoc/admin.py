@@ -85,14 +85,19 @@ class AdminJaxerNameSpace(admin.ModelAdmin):
 #    inlines = [AdminParameterInline, AdminMethodInline, AdminPropertyInline ]
     exclude = ['naitive']    
 class AdminFunctionModel(admin.ModelAdmin):
-#    inlines = [AdminParameterInline, AdminJavascriptObjectInline]
+    inlines = [AdminJavascriptObjectInline,]
     list_display = ('name',)
     fieldsets = (
         (None, {'fields': ('editor',)}),
         ('Information', {'fields':('name', ('content', 'is_global', 'example_code'))}),
+        ('Returns', {'fields':('return_param', 'return_type', 'type_id')}),
         ('Availability', {
                       'fields':('availablity', ('is_depricated', 'depricated'), ('client_side', 'server_side'))
                       }
+        ),
+        ('parameters',{
+                       'fields':('parameters',)
+                       }
         ),
         
     )

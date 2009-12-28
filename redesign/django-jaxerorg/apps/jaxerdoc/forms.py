@@ -9,7 +9,7 @@ from jaxerdoc.widgets import AjaxObjectSearchbar
 from jaxerhotsauce.models import ChangeSet
 from datetime import date
 try:
-    from jaxerlog import utils as logger
+    from jaxerlog.models import UserLogEntry as logger
 except ImportError:
     logger = None
     
@@ -56,8 +56,6 @@ class GenericAddForm(forms.ModelForm):
         exclude = ('content', 'comment', 'moderate', 'mod_reason')
         
     def save(self):
-        import pdb
-        pdb.set_trace()
         # if we get an instance, we know the object already exists
         if self.instance.pk is not None:
             raise ValidationError
@@ -86,7 +84,7 @@ class AddItemModerationForm(forms.ModelForm):
         model = QueuedItem
         # we don't want to moderator to edit the content
         # just moderate it
-        exclude = ('', 'content', 'submit_date',
+        exclude = ('content', 'submit_date',
                    'comment', 'add_key', 'key_expired', 'action')
     
     def save(self):
@@ -118,7 +116,7 @@ class AddItemModerationForm(forms.ModelForm):
             
             #save the updated queueditem
             try:
-                from jaxerlog.models import UserLogEntry, LOG_ADDITION 
+                from jaxerlog.models import LOG_ADDITION 
                 UserLogEntry.objects.log_action(
                     user_id = new_item.editor.pk,
                     content_type_id = new_item.get_ct_id(),
@@ -162,6 +160,8 @@ class QueueModerationForm(forms.ModelForm):
         if self.instance.id is None:
             return False
         else:
+            import pdb
+            pdb.set_trace()
             # we have an unmoderated queue objec
             mod_decision = self.cleaned_data['moderate']
             if mod_decision == 'approval':
@@ -181,12 +181,30 @@ class QueueModerationForm(forms.ModelForm):
                 # save plain text for search
                 current_doc.make_indexable()
                 # save the queue item
-                super(QueueModerationForm, self).save()
-                
-                
+                item = super(QueueModerationForm, self).save()
+                if logger is not None:
+                    from jaxerlog.models import LOG_ADDITION, LOG_CHANGE
+                    if self.instance.action =="new":
+                        logger.objects.log_action(
+                              user_id = item.editor.pk, 
+                              content_type_id = item.content_object.get_ct_id(), 
+                              object_id = item.content_object.pk, 
+                              action_flag = LOG_ADDITION, 
+                              change_message = "added a new document"
+                      )
+                        
+                    else:
+                        logger.objects.log_action(
+                              user_id = item.content_object.editor.pk, 
+                              content_type_id = item.content_object.get_ct_id(), 
+                              object_id = item.content_object.pk, 
+                              action_flag = LOG_CHANGE, 
+                              change_message = 'edited the document'
+                      )
+                return item
             else:
                 # if the decision was a denial
                 # just save the changes to the queue object
                 
-                super(QueueModerationForm, self).save()
+                return super(QueueModerationForm, self).save()
         
