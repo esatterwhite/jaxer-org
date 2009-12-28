@@ -26,7 +26,7 @@
 						{% for property in properties %}
 							{% if property %}						
 							<div class="{% cycle 'bg-deep' '' %} p_all-6">							
-								<div class="mr-8 fl"><span class="{{ property.property_object.name }} bold">{{ property }}:</span></div><div class="fl small">{{ property.content }}</div><br class="clearfloat" />						
+								<div class="mr-8 fl"><span class="{{ property.content_object.name }} bold">{{ property }}:</span></div><div class="fl small">{{ property.content }}</div><br class="clearfloat" />						
 							</div>
 							{% endif %}
 						{% endfor %}
@@ -47,7 +47,7 @@
 							<tr class="{% cycle '' 'alt' %}">
 								<td>
 									<div class="docs-heading">
-										{{ property.name }}: <span class="{{ property.property_object.name}}">{{ property.property_object.name}}</span>
+										{{ property.name }}: <span class="{{ property.content_object.name}}">{{ property.content_object.name}}</span>
 									</div>
 									<p class="compact-text">
 										{{ property.content }}

@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import fields
-from jaxerdoc.models import ClassItem,Property, Parameter, Function, JavascriptObject, JaxerNameSpace, QueuedItem,\
+from jaxerdoc.models import ClassItem, Property, Parameter, Function, JavascriptObject, JaxerNameSpace, QueuedItem, \
     MODERATION_OPTIONS
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
@@ -21,16 +21,16 @@ class GenericEditForm(forms.ModelForm):
         
         when saved, a new queueditem will be created
     '''
-    editor =       forms.ModelChoiceField(User.objects.all(), widget=fields.HiddenInput())
-    content_type = forms.ModelChoiceField(ContentType.objects.all(), widget=fields.HiddenInput())
-    object_id =    forms.CharField(widget=fields.HiddenInput())
-    at_revision =  forms.CharField(widget=fields.HiddenInput())
-    content =      forms.CharField(widget=forms.Textarea(attrs={'rows':'30'}))
-    comment =      forms.CharField(widget=forms.TextInput(attrs={'class':'width100'}), required=False)
-    action =       forms.ChoiceField(widget=forms.HiddenInput(), required=False)
+    editor = forms.ModelChoiceField(User.objects.all(), widget = fields.HiddenInput())
+    content_type = forms.ModelChoiceField(ContentType.objects.all(), widget = fields.HiddenInput())
+    object_id = forms.CharField(widget = fields.HiddenInput())
+    at_revision = forms.CharField(widget = fields.HiddenInput())
+    content = forms.CharField(widget = forms.Textarea(attrs = {'rows':'30'}))
+    comment = forms.CharField(widget = forms.TextInput(attrs = {'class':'width100'}), required = False)
+    action = forms.CharField(widget = forms.HiddenInput(), required = False)
     class Meta:
         model = QueuedItem
-        exclude = ('moderate','submit_date','mod_reason', 'add_key', 'key_expired', 'add_summary', 'adding_type')
+        exclude = ('moderate', 'submit_date', 'mod_reason', 'add_key', 'key_expired', 'add_summary', 'add_title', 'adding_type')
 class GenericAddForm(forms.ModelForm):
     '''
         this form should be used when a user wants to propose the addition 
@@ -39,18 +39,18 @@ class GenericAddForm(forms.ModelForm):
         form only displays a field for title and summary. We figure out the rest    
     '''
     types = ContentType.objects.all()
-    add_title =    forms.CharField(widget=forms.TextInput(attrs={'class':'width100'}),label='Title')
-    content_type = forms.ModelChoiceField(types, widget=forms.HiddenInput())
-    object_id =    forms.CharField(widget=forms.HiddenInput())
+    add_title = forms.CharField(widget = forms.TextInput(attrs = {'class':'width100'}), label = 'Title')
+    content_type = forms.ModelChoiceField(types, widget = forms.HiddenInput())
+    object_id = forms.CharField(widget = forms.HiddenInput())
     
-    add_summary =  forms.CharField(widget=forms.Textarea(), 
-                                   label='Summary', 
-                                   help_text='What is it? Why Should we add it?', required=True)
-    adding_type =  forms.ModelChoiceField(types, widget=forms.HiddenInput())
-    action =       forms.CharField(widget=forms.HiddenInput())
-    editor =       forms.ModelChoiceField(User.objects.all(), widget=forms.HiddenInput()) 
-    at_revision =  forms.CharField(widget=forms.HiddenInput())
-    next =         forms.CharField(widget=forms.HiddenInput())
+    add_summary = forms.CharField(widget = forms.Textarea(),
+                                   label = 'Summary',
+                                   help_text = 'What is it? Why Should we add it?', required = True)
+    adding_type = forms.ModelChoiceField(types, widget = forms.HiddenInput())
+    action = forms.CharField(widget = forms.HiddenInput())
+    editor = forms.ModelChoiceField(User.objects.all(), widget = forms.HiddenInput()) 
+    at_revision = forms.CharField(widget = forms.HiddenInput())
+    next = forms.CharField(widget = forms.HiddenInput())
     class Meta:
         model = QueuedItem
         exclude = ('content', 'comment', 'moderate', 'mod_reason')
@@ -73,21 +73,21 @@ class AddItemModerationForm(forms.ModelForm):
         This form holds enough generic data to create any of the
         Document
     '''
-    content_type = forms.ModelChoiceField(ContentType.objects.all(), widget=fields.HiddenInput())
-    object_id =    forms.CharField(widget=fields.HiddenInput())
-    at_revision =  forms.CharField(widget=fields.HiddenInput())
-    moderate =     forms.CharField(widget=forms.RadioSelect(choices=MODERATION_OPTIONS))
-    mod_reason =   forms.CharField(label="Mod Explaination",widget=forms.TextInput(attrs={'class':'width100'}))
-    adding_type =  forms.ModelChoiceField(ContentType.objects.all(), widget=fields.HiddenInput())
-    add_title =    forms.CharField(widget=fields.HiddenInput())
-    add_summary =  forms.CharField(widget=fields.HiddenInput())
-    editor =       forms.ModelChoiceField(User.objects.all(),widget=fields.HiddenInput())
+    content_type = forms.ModelChoiceField(ContentType.objects.all(), widget = fields.HiddenInput())
+    object_id = forms.CharField(widget = fields.HiddenInput())
+    at_revision = forms.CharField(widget = fields.HiddenInput())
+    moderate = forms.CharField(widget = forms.RadioSelect(choices = MODERATION_OPTIONS))
+    mod_reason = forms.CharField(label = "Mod Explaination", widget = forms.TextInput(attrs = {'class':'width100'}))
+    adding_type = forms.ModelChoiceField(ContentType.objects.all(), widget = fields.HiddenInput())
+    add_title = forms.CharField(widget = fields.HiddenInput())
+    add_summary = forms.CharField(widget = fields.HiddenInput())
+    editor = forms.ModelChoiceField(User.objects.all(), widget = fields.HiddenInput())
     class Meta:
         model = QueuedItem
         # we don't want to moderator to edit the content
         # just moderate it
-        exclude = ('', 'content', 'submit_date', 
-                   'comment', 'add_key', 'key_expired','action')
+        exclude = ('', 'content', 'submit_date',
+                   'comment', 'add_key', 'key_expired', 'action')
     
     def save(self):
         mod_decision = self.cleaned_data['moderate']
@@ -101,9 +101,9 @@ class AddItemModerationForm(forms.ModelForm):
             model = type.model_class()
             
             #populate new item
-            new_item = model(name=self.cleaned_data['add_title'], 
-                             content=self.cleaned_data['add_summary'],
-                             editor=self.cleaned_data['editor']
+            new_item = model(name = self.cleaned_data['add_title'],
+                             content = self.cleaned_data['add_summary'],
+                             editor = self.cleaned_data['editor']
                              )
             
             #save new item
@@ -113,17 +113,17 @@ class AddItemModerationForm(forms.ModelForm):
             self.instance.content_type = type
             self.instance. object_id = new_item.pk
             self.instance.at_revision = 1
-            secure_string = "sha$%s$%s$%s" %(self.instance.editor, new_item, new_item.created)
+            secure_string = "sha$%s$%s$%s" % (self.instance.editor, new_item, new_item.created)
             self.instance.add_key = sha224(secure_string).hexdigest()
             
             #save the updated queueditem
             try:
                 from jaxerlog.models import UserLogEntry, LOG_ADDITION 
                 UserLogEntry.objects.log_action(
-                    user_id         = new_item.editor.pk, 
+                    user_id = new_item.editor.pk,
                     content_type_id = new_item.get_ct_id(),
-                    object_id       = new_item.pk,
-                    action_flag     = LOG_ADDITION,
+                    object_id = new_item.pk,
+                    action_flag = LOG_ADDITION,
                     change_message = ""
                 )
             except ImportError:
@@ -139,17 +139,17 @@ class QueueModerationForm(forms.ModelForm):
 
     '''
     
-    content_type = forms.ModelChoiceField(ContentType.objects.all(), widget=fields.HiddenInput())
-    object_id =    forms.CharField(widget=fields.HiddenInput())
-    at_revision =  forms.CharField(widget=fields.HiddenInput())
-    moderate =     forms.CharField(widget=forms.RadioSelect(choices=MODERATION_OPTIONS))
-    mod_reason =   forms.CharField(label="Mod Explaination",widget=forms.TextInput(attrs={'class':'width100'}))
+    content_type = forms.ModelChoiceField(ContentType.objects.all(), widget = fields.HiddenInput())
+    object_id = forms.CharField(widget = fields.HiddenInput())
+    at_revision = forms.CharField(widget = fields.HiddenInput())
+    moderate = forms.CharField(widget = forms.RadioSelect(choices = MODERATION_OPTIONS))
+    mod_reason = forms.CharField(label = "Mod Explaination", widget = forms.TextInput(attrs = {'class':'width100'}))
     class Meta:
         model = QueuedItem
         # we don't want to moderator to edit the content
         # just moderate it
-        exclude = ('add_summary', 'editor', 'content', 'submit_date', 
-                   'comment', 'add_key', 'key_expired','action',
+        exclude = ('add_summary', 'editor', 'content', 'submit_date',
+                   'comment', 'add_key', 'key_expired', 'action',
                     'adding_type', 'add_title')
     def save(self):
         '''
@@ -174,9 +174,9 @@ class QueueModerationForm(forms.ModelForm):
                 # save the HTML to the document
                 current_doc.save()
                 #make revision
-                current_doc.make_new_revision(old_html, 
-                                              current_doc.name, 
-                                              self.instance.comment, 
+                current_doc.make_new_revision(old_html,
+                                              current_doc.name,
+                                              self.instance.comment,
                                               self.instance.editor)
                 # save plain text for search
                 current_doc.make_indexable()
