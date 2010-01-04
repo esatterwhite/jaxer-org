@@ -27,6 +27,7 @@ urlpatterns = patterns('',
      url(r'^$', 'jaxerorg.core.views.jaxer_home', name='jaxerorg_core_home'),                     
      url(r'^escape/$', 'jaxerorg.core.views.escape_code', name='jaxerorg_core_escapecode'),
      url(r'^accounts/login/$', 'jaxerorg.core.views.login_user', name="jaxer_login_user"),
+     url(r'^accounts/logout/$','jaxerorg.core.views.logout_user', name='jaxer_logout_user'),
 )
 urlpatterns += patterns('',
     url(r'^core/', include('jaxerorg.core.urls')),                        
