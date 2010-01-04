@@ -5,7 +5,9 @@ from jaxerdoc.models import QueuedItem
 from django.template.context import RequestContext
 from django.views.generic.simple import direct_to_template
 from django.contrib.auth.decorators import login_required, permission_required
-
+from django.template.loader import render_to_string
+from django.core.urlresolvers import reverse
+from jaxerutils.utils import get_model_class
 @login_required
 @permission_required('jaxerdoc.can_moderate_docs')
 def queue_manager(request, filter=None):
@@ -55,7 +57,7 @@ def moderate_queue(request, queue_id):
             m = 'you have successfully moderated: %s.' % queue
             # send a message to the person who submitted the edit
             from messages.models import Message
-            from django.template.loader import render_to_string
+
             
             if form.cleaned_data['moderate'] == 'approval': moderation = 'approved'
             else: moderation = 'rejected'
@@ -93,20 +95,31 @@ def moderate_new_object(request, queue_id):
     from jaxerdoc.forms import GenericAddForm, AddItemModerationForm
     # when the moderator submits decision
     queue = QueuedItem.objects.get(pk=queue_id)
-    if queue.add_key is not None or queue.key_expired:
+    if queue.add_key is not None and queue.key_expired:
         # we know the item has been moderated
         pass
     
     if request.POST:
-        form = AddItemModerationForm(request.POST)
+        form = AddItemModerationForm(request.POST, instance=queue)
         if form.is_valid():
-            m=''
-            item = form.save()
+            if form.cleaned_data['moderate'] == 'approval': moderation = 'approved'
+            else: moderation = 'rejected'            
+            # The magic happens in the AddItemModerationorm's Save Method
+            new_item, queue_item = form.save()
+            if moderation == 'approved':
+                queue_item.set_new_association(new_item)
+                queue_item.set_activiation_key()
+                m='You have successfully approved %s' % new_item
+            else:
+                m='You have successfully denied %s' % queue_item.add_title
+            message = render_to_string('jaxerdoc/new_item_approved.txt', {})
             request.user.message_set.create(message=m)
+            return HttpResponseRedirect(reverse('jaxerdoc_queue_moderation'))
     # when the moderator wants to review item
+        else:
+            form = AddItemModerationForm(request.POST, instance=queue)
     else:
         form = AddItemModerationForm(instance=queue)
     return render_to_response('jaxerdoc/moderate_queueitem_%s.html' % queue.action,
                                   {'form':form, 'queueitem':queue},
                                   context_instance=RequestContext(request))
-

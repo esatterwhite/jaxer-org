@@ -1,6 +1,6 @@
 {% extends 'jaxerdoc/docs_base.html' %}
 				{% block sidebar %}
-					{% with classitem.parameters.all as parameters %}
+					{% with classitem.online_parameters as parameters %}
 					<span class="fr mt-20 small"><a href="edit" id="js-objectsearch-link" title="what type of object is this parameter">edit</a></span>
 					<h1>Class Parameters</h1>
 					<div class=" p_all-6 mt-6 bg-deep dn" id="js-objectsearch-container">
@@ -22,7 +22,7 @@
 							<div class="compact-text italic mt-4">Required {% if parameter.required %}<img src="{{ MEDIA_URL }}css/img/rdo_on.png" />{% else %}<img src="{{ MEDIA_URL }}css/img/rdo_off.png" />{% endif %}</div>							
 						</div>
 						<div class="slide" id="js-reveal-content-{{ parameter.content_object.id }}">	
-						{% with parameter.properties.all as properties %}	
+						{% with parameter.online_properties as properties %}	
 						{% for property in properties %}
 							{% if property %}						
 							<div class="{% cycle 'bg-deep' '' %} p_all-6">							
@@ -38,7 +38,7 @@
 						<div class="empty-area">This {{ classitem.get_ct.name }} has no parameters</div>
 					{% endif %}
 					{% endwith %}
-					{% with classitem.properties.all as properties %}
+					{% with classitem.online_properties as properties %}
                     <h1>Class Properties</h1>
 					{% if properties %}
 					<table class="tbl-list">
@@ -66,18 +66,18 @@
 						{{ classitem.namespace.root_namespace.name }}.{% endif %}{% if classitem.namespace.parent_namespace %}{{ classitem.namespace.parent_namespace.name }}.{% endif %}{{ classitem.namespace.name }}.{{ classitem.name }}
 				{% endblock %}
 				{% block subheading-left %}
-						{{ classitem.name }}( {% for param in classitem.parameters.all %}
+						{{ classitem.name }}( {% for param in classitem.online_parameters %}
 													{% if param.required %}
-														{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>, 
+														{{ param.name }}:<a href="{% url jaxerdoc_document_detail param.slug, param.get_ct_id, param.pk %}" class="{{ param.content_object.name }}">{{ param.content_object.name }}</a>, 
 													{% comment %}
 													{% else %}
 														[{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>],
 													{% endcomment %} 
 													{% endif %}
 													{% if forloop.last %}
-													<a href="{% url jaxerdoc_propose_linked_object param.get_ct_id, classitem.get_ct_id, classitem.pk%}" class="object">add</a>)
+													<a href="{% url jaxerdoc_propose_linked_object param.get_ct_id, classitem.get_ct_id, classitem.pk %}">add</a>
 													{% endif %}
-												{% endfor %} 
+												{% endfor %} )
 				{% endblock %}
 				{% block subheading-right%}
 					Availibity:<a href="#">{{ classitem.availablity.get_short_version }}+</a>

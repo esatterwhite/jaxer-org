@@ -7,10 +7,11 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from jaxerdoc.widgets import AjaxObjectSearchbar
 from jaxerhotsauce.models import ChangeSet
+from jaxerutils.utils import get_model_class
 from datetime import date
 try:
     from jaxerlog.models import UserLogEntry as logger
-except ImportError:
+except ImportError, NameError:
     logger = None
     
 class GenericEditForm(forms.ModelForm):
@@ -79,13 +80,13 @@ class AddItemModerationForm(forms.ModelForm):
     adding_type = forms.ModelChoiceField(ContentType.objects.all(), widget = fields.HiddenInput())
     add_title = forms.CharField(widget = fields.HiddenInput())
     add_summary = forms.CharField(widget = fields.HiddenInput())
+    action = forms.CharField(widget=fields.HiddenInput())
     editor = forms.ModelChoiceField(User.objects.all(), widget = fields.HiddenInput())
     class Meta:
         model = QueuedItem
         # we don't want to moderator to edit the content
         # just moderate it
-        exclude = ('content', 'submit_date',
-                   'comment', 'add_key', 'key_expired', 'action')
+        exclude = ('submit_date', 'comment', 'add_key', 'key_expired','content')
     
     def save(self):
         mod_decision = self.cleaned_data['moderate']
@@ -93,42 +94,49 @@ class AddItemModerationForm(forms.ModelForm):
             from hashlib import sha224
             import pdb
             pdb.set_trace()
-            type = ContentType.objects.get(pk = self.cleaned_data['adding_type'].pk)
             
             # get model
-            model = type.model_class()
+            model = self.cleaned_data['adding_type'].model_class()
             
             #populate new item
             new_item = model(name = self.cleaned_data['add_title'],
                              content = self.cleaned_data['add_summary'],
-                             editor = self.cleaned_data['editor']
+                             editor = self.cleaned_data['editor'],
+                             content_type = self.cleaned_data['content_type'],
+                             object_id = self.cleaned_data['object_id'],
                              )
             
             #save new item
             new_item.save()
             
-            #update the queueitem instance
-            self.instance.content_type = type
-            self.instance. object_id = new_item.pk
-            self.instance.at_revision = 1
-            secure_string = "sha$%s$%s$%s" % (self.instance.editor, new_item, new_item.created)
-            self.instance.add_key = sha224(secure_string).hexdigest()
-            
-            #save the updated queueditem
+            # switch the queue item to the new item, not the item we are
+            # adding the new item too
+            queue_item = super(AddItemModerationForm, self).save()
+            _tmp = queue_item.content_object
+            if new_item.get_model_name().lower() == "parameter":
+                _tmp.parameters.add(new_item)
+            elif new_item.get_model_name().lower() == "property":
+                _tmp.properties.add(new_item)
+            elif new_item.get_model_name().lower() == "function":
+                _tmp.methods.add(new_item)
+            _tmp.save()
+            _tmp = None
+
             try:
                 from jaxerlog.models import LOG_ADDITION 
-                UserLogEntry.objects.log_action(
+                logger.objects.log_action(
                     user_id = new_item.editor.pk,
                     content_type_id = new_item.get_ct_id(),
                     object_id = new_item.pk,
                     action_flag = LOG_ADDITION,
                     change_message = ""
                 )
-            except ImportError:
+            except ImportError, NameError:
                 pass
             
-        return super(AddItemModerationForm, self).save()
-        
+            return new_item, queue_item
+        else:
+            return None, super(AddItemModerationForm, self).save()
         
 class QueueModerationForm(forms.ModelForm):
     '''

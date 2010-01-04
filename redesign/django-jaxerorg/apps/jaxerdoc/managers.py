@@ -11,7 +11,12 @@ class CustomObjectManager(Manager):
     def get_query_set(self):
         default_query_set = super(CustomObjectManager, self).get_query_set()    
         return default_query_set.filter(naitive = False)
-    
+class OnlineObjectManager(Manager):
+    '''for the JavascriptObject Class'''
+    def get_query_set(self):
+        default_query_set = super(CustomObjectManager, self).get_query_set()    
+        return default_query_set.filter(on_line = True)
+        
 class GlobalFunctionManager(Manager):
     def get_query_set(self):
         default_query_set = super(GlobalFunctionManager, self).get_query_set()    

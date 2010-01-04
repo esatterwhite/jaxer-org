@@ -7,9 +7,6 @@ urlpatterns = patterns('jaxerdoc.views',
         'document_detail',
         name='jaxerdoc_document_detail'),
         
-    url(r'^parameter/add/(?P<add_to_ct>\d+)-(?P<add_to_id>\d+)/', 
-        'add_parameter_to_object',
-         name="jaxerdoc_add_param_to_object"),
          
     url(r'^(?P<ctid>\d+)-(?P<objid>\d+)/edit/$', 
         'ajax_document_edit',
@@ -18,8 +15,10 @@ urlpatterns = patterns('jaxerdoc.views',
         'diff_test',
          name="difference_text"),                
 )
-urlpatterns += patterns('jaxerdoc.views',
-    url(r'^add/parameter/', 'add_parameter_to_object', name='jaxerdoc_search_object_form')                        
+urlpatterns += patterns('jaxerdoc.wiki_views.create_object',
+    url(r'^parameter/add/(?P<add_to_ct_id>\d+)-(?P<add_to_id>\d+)/', 
+        'add_parameter_to_object',
+         name="jaxerdoc_add_param_to_object"),
 )
 
 urlpatterns += patterns('jaxerdoc.wiki_views.moderate',

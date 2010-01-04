@@ -19,8 +19,11 @@ jsnamespace = Q(model__iexact = 'jaxernamespace')
 MODERATION_OPTIONS = (
     ('approval', 'Approve'),
     ('denial', 'Deny')
-)
-
+) 
+    
+#===============================================================================
+#                 FUNCTIONALITY GROUP
+#===============================================================================
 class FunctionalityGroup(models.Model):
     ''' 
         Functionality groups are a broad way to classify the modules of jaxer
@@ -41,7 +44,11 @@ class FunctionalityGroup(models.Model):
         ordering = ('title',)  
         
     def __unicode__(self):
-        return self.title           
+        return self.title   
+
+#===============================================================================
+#        STANDARD DOCUMENT MODEL
+#===============================================================================
 class StandardDocumentModel(SelfAwareModel):
     '''
         The standard document is self away and expects to have a 
@@ -172,10 +179,12 @@ class StandardDocumentModel(SelfAwareModel):
         if self.html_patch is None:
             return self.content
         else:
-            DMP = diff_match_patch()
-            patch = DMP.patch_fromText(self.html_patch)
-            return DMP.patch_apply(patch, self.content)[0]
-      
+            _DMP = diff_match_patch()
+            patch = _DMP.patch_fromText(self.html_patch)
+            return _DMP.patch_apply(patch, self.content)[0]
+#===============================================================================
+#   Poperty Class
+#===============================================================================
 class Property(StandardDocumentModel):
     ''' properties are non-executable object associated with objects
         be aware that a property can be any object type, including
@@ -201,14 +210,19 @@ class Property(StandardDocumentModel):
             
     def __unicode__(self):
         return self.name
+    @permalink
     def get_absolute_url(self):
-        return ""          
+        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 
+                                                      'ctid':self.get_ct_id(), 
+                                                      'objid':self.id})
     def type(self):
         return self.property_object
     def has_properties(self):
         return self.properties.count() > 0    
   
-#generic can go on anything
+#===============================================================================
+#  Parameter Class
+#===============================================================================
 class Parameter(StandardDocumentModel):
     '''
         Parameters are accepted by functions.
@@ -219,8 +233,10 @@ class Parameter(StandardDocumentModel):
     # the type of parameter a function expects can
     # be just about anything
     js_type = models.ForeignKey(ContentType, 
-                                limit_choices_to = Q(jsobjects | jsfunction))
-    js_id = models.PositiveIntegerField()
+                                limit_choices_to = Q(jsobjects | jsfunction),
+                                blank=False, null=True,
+                                verbose_name=_('object type'))
+    js_id = models.PositiveIntegerField('object id', blank=False, null=True)
     content_object = generic.GenericForeignKey('js_type', 'js_id')
     properties = models.ManyToManyField(Property, 
                                         related_name = "parameterproperty_set", 
@@ -241,10 +257,19 @@ class Parameter(StandardDocumentModel):
     #
     def __unicode__(self):
         return self.name
+    @permalink
     def get_absolute_url(self):
-        return ""
+        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 
+                                                      'ctid':self.get_ct_id(), 
+                                                      'objid':self.id})
     def has_properties(self):
         return self.properties.count() > 0
+    def online_properties(self):
+        return self.properties.filter(on_line=True)
+    
+#===============================================================================
+# ##    Function Class
+#===============================================================================
 class Function(StandardDocumentModel):
     ''' 
         Functions should be attached to any JavaScriptObject or any thing'
@@ -259,10 +284,12 @@ class Function(StandardDocumentModel):
                                     null = True, 
                                     related_name = "available_in")
     
-    is_depricated = models.BooleanField()
+    is_depricated = models.BooleanField(_('Is Depricated'),
+                                        help_text='Is this Function depricated')
     depricated = models.ForeignKey(JaxerRelease, 
                                    blank = True, 
-                                   null = True, 
+                                   null = True,
+                                   help_text='The version of jaxer in which this item was depricated', 
                                    related_name = "deripacted_in")
 
     is_global = models.BooleanField(_('Global'), 
@@ -296,12 +323,17 @@ class Function(StandardDocumentModel):
         verbose_name = "Function"      
     def __unicode__(self):
         return '%s' % self.name
+    @permalink
     def get_absolute_url(self):
-        return ""
-    def get_return_vars(self):
-        pass
- 
-# to be sub classed
+        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 
+                                                      'ctid':self.get_ct_id(), 
+                                                      'objid':self.id})
+    def online_parameters(self):
+        return self.parameters.filter(on_line=True)
+
+#===============================================================================
+# Javascript Object Class
+#===============================================================================
 class JavascriptObject(StandardDocumentModel):
     '''
         Representation of the JavaScript Object
@@ -333,14 +365,21 @@ class JavascriptObject(StandardDocumentModel):
         verbose_name = 'Object'    
     def __unicode__(self):
         return self.name
+    @permalink
     def get_absolute_url(self):
-        return ""        
+        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 
+                                                      'ctid':self.get_ct_id(), 
+                                                      'objid':self.id})
     def type(self):
         return "Object"
     def has_properties(self):
         return self.properties.count() > 0
     def has_methods(self):
         return self.methods > 0
+    
+#===============================================================================
+#    Namespace Object
+#===============================================================================
 class JaxerNameSpace(JavascriptObject):
     #this is a subclass used to organize Jaxer's Namespace Objects
     #apart from the Standard javascript Objects(String, Array, etc)
@@ -386,7 +425,25 @@ class JaxerNameSpace(JavascriptObject):
     def save(self, force_insert = False, force_update = False):
         self.search_name = self.__unicode__()
         super(JaxerNameSpace, self).save(force_insert, force_update)   
-        
+    def has_properties(self):
+        return self.properties.count() > 0
+    def has_methods(self):
+        return self.methods.count() > 0
+    def has_parameters(self):
+        return self.parameters.count() > 0
+    def inherited_methods(self):
+        return self.parent_namespace.methods.filter(on_line=True)
+    def inherited_properties(self):
+        return self.parent_namespace.properties.filter(on_line=True)
+    def online_methods(self):
+        return self.parent_namespace.methods.filter(on_line=True)
+    def online_properties(self):
+        return self.properties.filter(on_line=True)
+    def online_parameters(self):
+        return self.parameters.filter(on_line=True)   
+#===============================================================================
+#    ClassItem Class
+#===============================================================================
 class ClassItem(StandardDocumentModel):
     
     '''
@@ -417,7 +474,10 @@ class ClassItem(StandardDocumentModel):
         return ".".join([self.namespace.__unicode__(), self.name])    
     @permalink
     def get_absolute_url(self):
-        return('jaxerdoc.views.document_detail', (), {'oslug':self.slug, 'ctid':self.get_ct_id(), 'objid':self.id})
+        return('jaxerdoc.views.document_detail', 
+               (), 
+               {'oslug':self.slug, 'ctid':self.get_ct_id(), 'objid':self.id})
+        
     def save(self, force_insert = False, force_update = False):
         self.search_name = self.__unicode__()
         super(ClassItem, self).save(force_insert, force_update)    
@@ -431,10 +491,22 @@ class ClassItem(StandardDocumentModel):
         return self.methods.count() > 0
     def has_parameters(self):
         return self.parameters.count() > 0
-    
-# the queueditem is the crux of the documentation
-# it is how both users and moderators dictate the advancement,
-# editing, creation and moderation of the docs.
+    def inherited_methods(self):
+        return self.namespace.methods.filter(on_line=True)
+    def inherited_properties(self):
+        return self.namespace.properties.filter(on_line=True)
+    def online_methods(self):
+        return self.namespace.methods.filter(on_line=True)
+    def online_properties(self):
+        return self.properties.filter(on_line=True)
+    def online_parameters(self):
+        return self.parameters.filter(on_line=True)
+#===============================================================================
+#        QueuedItem Class
+# # the queueditem is the crux of the documentation
+# # it is how both users and moderators dictate the advancement,
+# # editing, creation and moderation of the docs.
+#===============================================================================
 class QueuedItem(models.Model):
     ''' 
         The queueditem is the crux of the wiki system within jaxerdoc.
@@ -502,9 +574,7 @@ class QueuedItem(models.Model):
         permissions = (
                ('can_moderate_docs', 'Can Moderate Docs'),
         )    
-    def save(self, force_insert = False, force_update = False):
-        
-        super(QueuedItem, self).save(force_insert, force_update)
+
     def __unicode__(self):
         return "edit for %s on revision %s" % (self.content_object, self.at_revision)
     def review_content(self):
@@ -541,13 +611,23 @@ class QueuedItem(models.Model):
         return dmp.diff_prettyHtml(diffs)
     def is_moderated(self):
         return not self.moderate == None
-    
+    def set_activiation_key(self):
+        from hashlib import sha224
+        from jaxerutils.utils import get_object
+        if self.action == 'new' and self.moderate == "approval":    
+            obj = get_object(self.content_type.pk, self.object_id)
+            secure_string = '$sha$%s$%s$%s' % (self.adding_type, self.editor.username, obj.created)
+            self.add_key = sha224(secure_string).hexdigest()
+            self.save()
+        return self.add_key
     def get_activation_key(self):
-        if self.action == 'new' and self.moderate == "approval":
-            from hashlib import sha224
-            secure_string = '$sha$%s$%s$%s' % (self.adding_type, self.editor.username, self.created)
-            return sha224(secure_string).hexdigest()
-        else:
-            return None
+        if self.add_key is None:
+            self.set_activiation_key()
+        return self.add_key
     def is_new_item(self):
         return self.action == 'new'
+    def set_new_association(self, new_item):
+        from hashlib import sha224
+        self.content_type = new_item.get_ct()
+        self.object_id = new_item.pk
+        self.save()

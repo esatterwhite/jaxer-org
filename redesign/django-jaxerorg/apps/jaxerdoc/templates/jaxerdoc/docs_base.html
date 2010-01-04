@@ -81,6 +81,10 @@
 						new Element('br',{
 							'class':'clearfloat'
 						}).inject(choice);
+						choice.addEvent('click',function(evt){
+							//console.log(token.url);
+							window.location.href = token.url;
+						});
 			            this.addChoiceEvents(choice).inject(this.choices)
 			        }
 				});
