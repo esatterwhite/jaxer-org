@@ -828,6 +828,11 @@ UI.MultiLineAutoComplete = new Class({
 	}			
 });
 window.addEvent('domready', function(){
+	new MenuMatic({
+		id:"mainnav",
+		physics: Fx.Transitions.Circ.easeOut,
+		opacity: 90
+	});
     var tips = new Tips('.tooltips', {
         className: 'bg-nearblack p_all-6 rounded w-200',
         offset: {
