@@ -1,4 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+{% load inbox %}
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -15,14 +16,31 @@
 			<div id="header-wrap">
 				<div id="logo"><img src="{{ MEDIA_URL }}images/header_logo.png" alt="logo"/></div>
 				<ul id="mainnav">
-					<li><a href="menu">Home</a></li>
+					<li><a href="menu">Home</a>
+						<ul>
+							<li><a>sample</a></li>
+							<li><a>sample</a></li>
+							<li><a>sample</a></li>
+							<li><a>sample</a></li>
+						</ul>
+					</li>
 					<li><a href="menu">Quick Start</a></li>
-					<li><a href="menu">API</a></li>
+					<li><a href="{% url jaxerdoc_docs_home %}">API</a></li>
 					<li><a href="menu">Tutorials</a></li>
 					<li><a href="menu">Developer Guide</a></li>
 					<li><a href="menu">Hosting Guide</a></li>
 					{% if user.is_authenticated %}
-					<li><a href="#">Welcome, {{ user.first_name }}</a></li>
+					<li><a href="#">Welcome, {{ user.first_name }}</a>
+						<ul>
+							<li><a>profile</a></li>
+							<li><a>messages <span class="compact-text">({% inbox_count %})</span></a>
+								<ul>
+									<li><a>compose</a></li>
+								</ul>
+							</li>
+							<li><a href="{% url jaxer_logout_user %}">log out</a></li>
+						</ul>
+					</li>
 					{% else %}
 					<li><a href="{% url jaxer_login_user %}">Log In</a></li>
 					{% endif %}
@@ -100,8 +118,8 @@
                 </div>                 
             </div>
 		</div>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/MenuMatic.js"></script>
 		<script type="text/javascript" src="{{ MEDIA_URL }}js/mootools-1.2.4.2-more.js"></script>
-		
 		<script type="text/javascript" src="{{ MEDIA_URL }}js/base-debug.js"></script>				
 		{% block extrascripts %}{% endblock %}
 	</body>
