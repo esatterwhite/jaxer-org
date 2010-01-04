@@ -20,7 +20,7 @@ class ChangeSet(models.Model):
         EditableItem as a generic inline relation
         
         import this in to your application's admin.py
-        create a generic inlin and attach it to anything
+        create a generic inline and attach it to anything
         which subclasses EditableItem as a generic inline
         and you have a "wiki-able" item
     '''
@@ -29,10 +29,10 @@ class ChangeSet(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')    
     editor =         models.ForeignKey(User, limit_choices_to={'is_staff':True})
     revision =       models.PositiveIntegerField()   
-    comment =        models.CharField(max_length=255, blank=True)
+    comment =        models.CharField(max_length=255, blank=True, help_text="Tell us why/what you are changing")
     content_diff =   models.TextField('Content Patch', editable=False, blank=True)
     date_modified =  models.DateTimeField(default = datetime.now(), blank=False)
-    old_name =      models.CharField("Name", max_length = 255, blank = True)
+    old_name =       models.CharField("Name", max_length = 255, blank = True)
     
     approve_change = models.BooleanField()
     deny_change =    models.BooleanField()
@@ -44,7 +44,28 @@ class ChangeSet(models.Model):
                
     def __unicode__(self):
         return "revision %s" % self.revision
-    
+    def see_item_at_version(self, version):
+        ''' reverts the content of the object and returns it with out saving'''
+        editable_object = self.content_object
+        #get all changesets greater than self.revision ordered -revision
+#        if version == 1:
+#            changesets = editable_object.changes.filter(
+#                                                      revision__gte=self.revision
+#                                                      ).order_by('-revision')
+#        else:
+        changesets = editable_object.changes.filter(
+                                                      revision__gte=self.revision
+                                                      ).order_by('-revision')
+        
+        #collect the content diff & convert to patch
+        content = None
+        for change in changesets:
+            if content is None:
+                content = editable_object.get_html_content()              
+            patch = DMP.patch_fromText(change.content_diff)           
+            #apply patches to the current content object
+            content = DMP.patch_apply(patch, content)[0]
+        return content  
     def reapply(self, editor):
         ''' 
             apply the patch to the content_object
@@ -52,9 +73,9 @@ class ChangeSet(models.Model):
         '''
         #get content object
         editable_object = self.content_object
-        
+               
         #get all changesets greater than self.revision ordered -revision
-        changesets = editable_object.changeset_set.filter(
+        changesets = editable_object.changes.filter(
                                                       revision__gt=self.revision
                                                       ).order_by('-revision')
         
@@ -180,27 +201,4 @@ class EditableItem(models.Model):
     def get_ct(self):
         ''' returns the ID of this objects ContentType'''
         return ContentType.objects.get_for_model(self)
-            
-class WikiPage(EditableItem):
-    '''DOCSTRINGS'''
-    changes = generic.GenericRelation(ChangeSet)
-    objects = Manager()
-    def __unicode__(self):
-        return "%s" % self.slug
-    def __str__(self):
-        return self.__unicode__()
-    #in the case we want to revert back to the old content
-    def make_new_revision(self, old_content, 
-                          old_title, comment, editor):        
-        '''Overridden from EditableItem'''
-        ctype = ContentType.objects.get_for_model(self)
-        from jaxerhotsauce.utils import make_difPatch
-        diff_text = make_difPatch(self.content, old_content)
-        cset = ChangeSet.objects.create(content_diff=diff_text, 
-                                      content_type=ctype, 
-                                      object_id=self.id, 
-                                      comment=comment,
-                                      editor=editor,
-                                      old_title=old_title)
-        return cset
         

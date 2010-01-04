@@ -1,0 +1,17 @@
+{% extends 'base.html'%}
+
+{% block content %}
+<form action="" method="post">
+<fieldset>
+	{{ form.as_ul }}
+</fieldset>
+<fieldset>
+	<ul>
+		<li>
+			<span class="dark_button_wrap fl"><input type="submit" class="dark_button"/></span>
+			<br class="cl" />
+		</li>
+	</ul>
+</fieldset>
+</form>
+{% endblock %}

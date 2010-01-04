@@ -8,7 +8,7 @@ class EditableItemForm(ModelForm):
         be set in the meta innerclass
     '''
     from django.contrib.auth.models import User
-    author =    forms.ModelChoiceField(queryset=User.objects.all(),widget=forms.HiddenInput())
+    editor =    forms.ModelChoiceField(queryset=User.objects.all(),widget=forms.HiddenInput())
     comment =   forms.CharField()
     action =    forms.CharField(widget=forms.HiddenInput())
     
@@ -20,7 +20,7 @@ class EditableItemForm(ModelForm):
         # get old infor before saving
 
         comment = self.cleaned_data['comment']
-        editor = self.cleaned_data['author']
+        editor = self.cleaned_data['editor']
         if self.instance.id is None:
             old_name = ""
             old_content = ""
@@ -32,7 +32,7 @@ class EditableItemForm(ModelForm):
             
         new_item = super(EditableItemForm, self).save()
         if new:
-            new_item.author = editor
+            new_item.editor = editor
             new_item.save()
         # create new ChangeSet
         new_item.send_to_que(old_content, old_name, comment, editor)
