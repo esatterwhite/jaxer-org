@@ -4,10 +4,12 @@ class MooEditor(forms.Textarea):
     class Media:
         js = ('js/editor/editor_r4.js','js/MooEditable.Extras.js', 'js/MooEditable.UI.MenuList.js')
         css = {'all':('css/editor_black.css','css/MooEditable.css',)}
+    
     def __init__(self, attrs={}):
         return super(MooEditor, self).__init__(attrs)
     
     def render (self, name, value, attrs=None):
+
         rendered = super(MooEditor, self).render(name,value,attrs)
         return rendered + ('''<script type="text/javascript">
                                     var MEDIA_URL = '%s';

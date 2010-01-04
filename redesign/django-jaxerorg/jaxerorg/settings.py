@@ -116,6 +116,7 @@ THUMBNAIL_PROCESSORS = (
 APPEND_SLASH = True
 ROOT_URLCONF = 'jaxerorg.urls'
 AUTH_PROFILE_MODULE ='jaxerprofile.userprofile'
+DJAPIAN_DATABASE_PATH = '/djapian_spaces/'
 INSTALLED_APPS = (
     'django_extensions',
     'django.contrib.auth',
@@ -128,11 +129,13 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'jaxerorg.core',
     'jaxerlog',
+    'jaxerprofile',
     'jaxerblog',
+    'djapian',
     'jaxerorg.jaxerprofile',
     'pagination',
     'sorl.thumbnail',
-    'hotsauce',
+    'jaxerhotsauce',
     'pagination',
     'template_utils',
     'registration',

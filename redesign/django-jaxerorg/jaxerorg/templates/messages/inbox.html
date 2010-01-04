@@ -16,7 +16,7 @@
 {% for message in message_list %} 
     <tr class="{% cycle '' 'alt' %} align-c">
         <td>{{ message.sender }}</td>
-        <td><a href="{{message.get_absolute_url }}">{{ message.subject }}</a></td>
+        <td><a href="{{message.get_absolute_url }}" class="{% if message.new %}bold {% else %}{% endif %} {% if message.replied %}grey {% endif %}">{{ message.subject }}</a></td>
         <td>{{ message.sent_at|date:_("DATETIME_FORMAT") }}</td>
         <td><a href="{% url messages.views.delete message.id %}">{% trans "delete" %}</a></td>
     </tr>

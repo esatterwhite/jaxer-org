@@ -44,3 +44,6 @@ urlpatterns += patterns('',
 urlpatterns += patterns('',
     url(r'^notification/', include('notification.urls')),
 )
+urlpatterns += patterns('',
+    url(r'^profiles/', include('jaxerprofile.urls')),                        
+)

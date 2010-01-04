@@ -1,12 +1,37 @@
 from datetime import date, datetime
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django_extensions.db.fields import AutoSlugField
 from sorl.thumbnail.fields import ImageWithThumbnailsField
 from django.contrib.auth.models import User
 
-
+OS_OPTIONS=(
+   ('Windows',(
+        ('.zip', 'Windows XP/Vista'),
+        ('.zip', 'Windows 7'),
+      )
+   ),
+   ('Linux 32 Bit',(
+        ('.tar.gz','Linux'),
+      )  
+    ),
+    ('Linux 64 Bit',(
+        ('.tar.gz', 'Linux'),
+      )  
+    ),
+    ('Mac', ( 
+        ('.dmg','Mac OS X'),
+      )  
+    )
+)
+RELEASE_STATE=(
+    ('beta', 'Beta'),
+    ('alpha', 'Alpha'),
+    ('stable', 'Stable'),
+    ('insecure', 'Insecure')
+)
 class HomePageItem(models.Model):
     '''
         These items are displayed in the 6 primary slots of the homepage
@@ -46,7 +71,7 @@ class HomeScrollPaneItem(models.Model):
        
     text = models.CharField(max_length=15, blank=False)
     date_added = models.DateField(default=date.today()) 
-    
+           
 class StandardContentItem(models.Model):
     """
         this is the site's baisc content item. It will allow for easy updates
@@ -64,7 +89,7 @@ class StandardContentItem(models.Model):
     )
     author = models.ForeignKey(User)
     title = models.CharField(max_length=255)
-    slug = AutoSlugField(populate_from=('title','id'))
+    slug = AutoSlugField(populate_from='title')
     description = models.CharField(max_length=255)
     date_posted = models.DateTimeField(default=datetime.now())
     date_modified = models.DateTimeField(default=datetime.now())
@@ -78,14 +103,12 @@ class StandardContentItem(models.Model):
                                              extra_thumbnails={
                                                'icon': {'size': (45, 45)},
                                                'thumb': {'size': (80, 80)},
-                                               'feature':{'size':(150,65),
-                                                          'options':['crop']},
+                                               'feature':{'size':(150,65), 'options':['crop']},
                                                'smallbox': {'size': (150, 150)},
                                                'headlines':{'size':(150,150)},
                                                'medium':{'size':(280,200)},
                                                'blog_manager':{'size':(215,150),
-                                                                'quality':70,
-                                                                'options':['crop']}
+                                                                'quality':70, 'options':['crop']}
                                                 }
                                              )
     was_published = models.BooleanField(blank=True, editable=False)
@@ -111,11 +134,58 @@ class StandardContentItem(models.Model):
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
     def get_ct_id(self):
-        ''' returns the ID of this objects ContentType'''
-        app = self.__module__.split('.')[-2]
-        mod = self.__class__.__name__.lower()
-        return ContentType.objects.get(app_label=app, model=mod).id
+        return self.get_ct().id
     
     class Meta:
         abstract=True
         ordering=['date_posted',]
+        
+class DownloadableFile(models.Model):
+    download=     models.FileField(upload_to='doanloads/')
+    date_released = models.DateField(blank=False, default=datetime.now())
+    content_type = models.ForeignKey(ContentType)
+    object_id =    models.PositiveIntegerField(default=0)
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    class Meta:
+        abstract = True
+        ordering =['-date_released',]
+
+class JaxerDownload(DownloadableFile):
+    os =       models.CharField(max_length=100, choices=OS_OPTIONS)
+    comment =  models.CharField(max_length=255, blank=True)    
+
+class JaxerRelease(models.Model):
+    
+    name =     models.CharField(max_length=255)
+    
+    major =    models.PositiveSmallIntegerField(default=0)
+    minor =    models.PositiveSmallIntegerField(default=0)
+    security = models.PositiveSmallIntegerField(default=0)
+    bug_fix =  models.PositiveIntegerField(default=0)
+    
+    notes =    models.TextField()
+    
+    development = models.BooleanField(_('Development Version')) 
+    
+    downloads = generic.GenericRelation(JaxerDownload)
+    def __unicode__(self):
+        return '%s %s' % (self.name, self.get_version())
+    def get_version(self):
+        version =""
+        if self.bug_fix > 0:
+            version = ".".join(['%s', '%s', '%s', '%s'])%(self.major, self.minor, self.security, self.bug_fix)
+        elif self.security > 0:
+            version =".".join(['%s', '%s', '%s'])%(self.major, self.minor, self.security)
+        else:
+            version = "%s.%s" % (self.major, self.minor)
+        return version
+    
+    def get_short_version(self):
+        return "%s.%s" % (self.major, self.minor)
+        
+    class Meta:
+        pass
+class Article(StandardContentItem):
+    pass
+    class Meta:
+        pass

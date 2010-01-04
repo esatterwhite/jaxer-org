@@ -2,7 +2,8 @@
 from django import forms
 from django.template.defaultfilters import force_escape
 from django.utils.html import escape
-
+from django.contrib.auth.models import User
+from jaxerorg.core.widgets import MooEditor
 class InsertCodeForm(forms.Form):
     '''    
         this is an unbound form for the site WYSIWYG editor. The submission of
@@ -29,3 +30,10 @@ class InsertCodeForm(forms.Form):
                                     help_text=_help,
                                     widget=forms.Textarea(attrs={'cols':40})
                               )
+class LoginForm(forms.Form):
+    username = forms.CharField(widget=(forms.TextInput(attrs={'class':'width100'})))
+    password = forms.CharField(widget=(forms.PasswordInput(attrs={'class':'width100'})))
+    next =     forms.CharField(widget=(forms.HiddenInput()))
+    
+class EditorForm(forms.Form):
+    content = forms.CharField(widget=MooEditor(attrs={'cols':'40', 'rows':'20'}))

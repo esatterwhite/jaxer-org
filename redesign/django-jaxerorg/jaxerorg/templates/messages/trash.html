@@ -8,25 +8,26 @@
 
 {% block slab %}
 {% if message_list %} 
-<table class="messages">
-    <thead>
-        <tr><th>{% trans "Sender" %}</th><th>{% trans "Subject" %}</th><th>{% trans "Date" %}</th><th>{% trans "Action" %}</th></tr>
-    </thead>
-    <tbody>
-{% for message in message_list %} 
-    <tr>
-        <td>{{ message.sender }}</td>
-        <td> 
-        {{ message.subject }}
-        </td>
-        <td>{{ message.sent_at|date:_("DATETIME_FORMAT") }}</td>
-        <td><a href="{% url messages_undelete message.id %}">{% trans "undelete" %}</a></td>
-    </tr>
-{% endfor %}
-    </tbody>
-</table>
+<div class="bg-light p_all-6 border-dark">
+	<table class="tbl-list align-c">
+	    <thead>
+	        <tr><th>{% trans "Sender" %}</th><th>{% trans "Subject" %}</th><th>{% trans "Date" %}</th><th>{% trans "Action" %}</th></tr>
+	    </thead>
+	    <tbody>
+		{% for message in message_list %} 
+	    <tr class="{% cycle '' 'alt' %}">
+	        <td>{{ message.sender }}</td>
+	        <td> 
+	        {{ message.subject }}
+	        </td>
+	        <td>{{ message.sent_at|date:_("DATETIME_FORMAT") }}</td>
+	        <td><a href="{% url messages_undelete message.id %}">{% trans "undelete" %}</a></td>
+	    </tr>
+		{% endfor %}
+	    </tbody>
+	</table>
 {% else %}
 <div class="empty-area">{% trans "No messages." %}</div>
 {% endif %}   
 <p class="red">{% trans "Deleted Messages are removed from the trash at unregular intervals, don't rely on this feature for long-time storage." %}</p>
-{% endblock %}
+</div>{% endblock %}
