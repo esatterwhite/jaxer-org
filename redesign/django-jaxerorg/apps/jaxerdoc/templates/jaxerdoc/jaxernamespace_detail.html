@@ -90,7 +90,7 @@
 				</div>
 				{% endif %}
 				<span class="fr" content_type_id="{{ jaxernamespace.get_ct_id }}" object_id="{{ jaxernamespace.id }}">
-					<a href="{% url jaxerdoc_modify_document ctid=jaxernamespace.get_ct_id, objid=jaxernamespace.id %}" id="js-wiki-edit-{{ jaxernamespace.id }}" class='mb-4'>edit</a>
+					<a href="{% url jaxerdoc_modify_document ctid=jaxernamespace.get_ct_id, objid=jaxernamespace.id %}" {% if user.is_authenticated %}id="js-wiki-edit-{{ jaxernamespace.id }}"{% endif %} class='mb-4'>edit</a>
 				</span>	
 				<br class="clearfloat" />
 				<div id='js-wiki-content-{{ jaxernamespace.id }}' class=' border-dark mb-6 p_all-4'>							

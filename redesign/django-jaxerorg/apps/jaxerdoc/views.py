@@ -9,6 +9,7 @@ from jaxerdoc.models import ClassItem, Function, Parameter, Property,\
                             JaxerNameSpace, JavascriptObject, QueuedItem
 from django.template.context import RequestContext
 from django.views.generic.simple import direct_to_template
+from django.contrib.auth.decorators import login_required
 from jaxerutils.utils import get_object
 import datetime
 
@@ -41,7 +42,7 @@ def document_detail(request, oslug, ctid, objid, template_name = None, message =
     return render_to_response(template,
                               {"%s" % obj.get_model_name():obj, 'message':message},
                               context_instance = RequestContext(request))
-
+@login_required
 def ajax_document_edit(request, ctid, objid, template_name = None):  
     from jaxerdoc.forms import GenericEditForm
     from jaxerdoc.utils import get_object
@@ -80,6 +81,8 @@ def ajax_document_edit(request, ctid, objid, template_name = None):
             context = {"%s" % type.model:obj, 'message':message}
             return direct_to_template(request, template, extra_context = context)
     return HttpResponseRedirect(doc.get_absolute_url())
+
+@login_required
 def document_activation(request, ctid, objid, key=None):
     ''' 
         allows the user who submitted a new object the 

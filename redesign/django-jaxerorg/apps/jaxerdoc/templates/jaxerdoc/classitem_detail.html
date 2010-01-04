@@ -94,7 +94,7 @@
 				
 				{% block docbody %}
 				<span class="fr" content_type_id="{{ classitem.get_ct_id }}" object_id="{{ classitem.id }}">
-					<a href="{% url jaxerdoc_modify_document ctid=classitem.get_ct_id, objid=classitem.id %}" id="js-wiki-edit-{{ classitem.id }}">edit</a>
+					<a href="{% url jaxerdoc_modify_document ctid=classitem.get_ct_id, objid=classitem.id %}" {% if user.is_authenticated %}id="js-wiki-edit-{{ classitem.id }}"{% endif %}>edit</a>
 				</span>
 				<br class="clearfloat" />
 				<div id='js-wiki-content-{{ classitem.id }}'>
