@@ -259,6 +259,169 @@ dl.message-headers dt{padding:6px; color:#15A555; background-color:#333; border:
 .leftcol{float:left;clear:left;width:50%}
 .rightcol{float:left;clear:right;width:50%}
 
+/* 		MENU STYLES 		*/
+
+
+/* all menu links */
+#nav a, #subMenusContainer a{
+	text-decoration:none;
+	display:block;
+	color:#666; border-left:3px solid transparent; padding:0 4px 0 4px; font-size:11px
+	padding:10px 6px; margin:0 4px; font-size:14px; color:#15A555}
+
+/* Just main menu links --[for non-javascript users this applies to submenu links as well]*/
+#nav a{
+text-decoration:none; color:#15A555	
+padding:10px 6px; margin:0 4px; font-size:14px; color:#15A555}
+
+/* Just sub menu links */
+#subMenusContainer a, #nav li li a{
+	text-align:left;
+}
+
+/* All menu links on hover or focus */
+#nav a:hover, #nav a:focus,  #nav a.mainMenuParentBtnFocused{
+color:#FFF; border-left:3px solid #006600;
+}
+#subMenusContainer a.subMenuParentBtnFocused{}
+#subMenusContainer a:hover, #subMenusContainer a:focus{
+	color:#b30000
+}
+/* sub menu links on hover or focus */
+#subMenusContainer a:hover, 
+#subMenusContainer a:focus, 
+#nav a.mainMenuParentBtnFocused, 
+#subMenusContainer a.subMenuParentBtnFocused,
+#nav li a:hover,
+#nav li a:focus{
+	color:#FFF;
+
+}
+
+/* Parent Sub Menu Links ---[javascript users only]*/
+.subMenuParentBtn{ 
+	/*background: url(../img/arrow_right.gif) right center no-repeat;*/
+}
+
+/* Parent Sub Menu Links on hover or focus ---[javascript users only]*/
+.subMenuParentBtnFocused{ 
+	color:#FFF; border-left:3px solid #006600;
+	/* background: url(img/arrow_right_over.gif) right center no-repeat;*/
+}
+
+/* Parent Main Menu Links ---[javascript users only]*/
+.mainMenuParentBtn{
+	/* background: url(img/rdo_off.png) right center no-repeat;*/ 
+}
+
+/* Parent Main Menu Links on hover or focus ---[javascript users only]*/
+#mainnav a.mainMenuParentBtnFocused, .mainMenuParentBtnFocused{	
+	color:#FFF; border-left:3px solid #006600;
+	/*background: url(img/arrow_down_over.gif) right center no-repeat;*/ 
+}
+
+/* ----[ OLs ULs, LIs, and DIVs ]----*/
+
+/* Submenu Outer Wrapper - each submenu is inside a div with this class - javascript users only */
+.smOW{ 
+	display:none; 
+	position: absolute; 
+	overflow:hidden; 
+	/*the 2px left & right padding lets you have a 1px border 
+	  on the ul or ol inside since overflow is set to hidden*/
+	padding:0 2px;
+	margin:5px 0 0 3px;
+}
+
+
+/* All ULs and OLs */
+#nav, #nav ul, #nav ol, #subMenusContainer ul, #subMenusContainer ol { 
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	line-height: 1em;
+}
+
+/* All submenu OLs and ULs */
+#nav ol, #nav ul, #subMenusContainer ul, #subMenusContainer ol {	
+	/*border around submenu goes here*/	 
+	margin:2px;
+	left:0;
+}
+#nav ol, #nav ul li, #subMenusContainer ul, #subMenusContainer ol {	
+	/*border around submenu goes here*/	 
+	margin-bottom:2px;
+	padding:1px;
+	left:0;
+}
+
+/* List items in main menu --[for non-javascript users this applies to submenus as well]  */
+#nav li { 
+	/*great place to use a background image as a divider*/
+	display:block;
+	list-style:none;
+	position:relative;
+	float:left;
+}
+
+#subMenusContainer li{
+	list-style: none;
+	border-left:2px solid #fff;
+	margin-bottom:2px;
+	margin-left:-2px;
+	background:#111;
+	padding:2px
+}
+#subMenusContainer li:hover{
+	border-left:2px solid #006600;
+}
+/* main menu ul or ol elment */
+#nav{
+	display:block;
+	position: absolute;
+	list-style:none;
+	margin:0 0 0 0;
+	z-index:5;
+	top:15px;
+	left:50%;
+	text-align: center;
+	display:block;
+}
+
+#subMenusContainer{	display:block; 	position:absolute;	top:0;	left:0;	width:100%;	height:0;	overflow:visible;	z-index:1000000000; }
+
+
+/* --------------------------[ The below is just for non-javscript users ]--------------------------*/
+#nav li li{	float:none; }
+
+#nav li li a{ /* Just submenu links*/	
+	position:relative;
+	float:none;
+}
+
+#nav li ul { /* second-level lists */
+	position: absolute;
+	width: 10em;
+	margin-left: -1000em; /* using left instead of display to hide menus because display: none isn't read by screen readers */
+	margin-top:.5em;
+}
+
+/* third-and-above-level lists */
+#nav li ul ul { margin: -1em 0 0 -1000em; }
+#nav li:hover ul ul {	margin-left: -1000em; }
+
+ /* lists nested under hovered list items */
+#nav li:hover ul{	margin-left: 0; }
+#nav li li:hover ul {	margin-left: 10em; margin-top:-2.5em;}
+
+/* extra positioning rules for limited noscript keyboard accessibility */
+#nav li a:focus + ul {  margin-left: 0; margin-top:2.2em; }
+#nav li li a:focus + ul { left:0; margin-left: 1010em; margin-top:-2.2em;}
+#nav li li a:focus {left:0;  margin-left:1000em; width:10em;  margin-top:0;}
+#nav li li li a:focus {left:0; margin-left: 2010em; width: 10em;  margin-top:-1em;}
+#nav li:hover a:focus{ /*argin-left: 0;*/ }
+#nav li li:hover a:focus + ul { margin-left: 10em; }
+
 /* Autocompleter Styles */
 ul.autocompleter-choices
 {
