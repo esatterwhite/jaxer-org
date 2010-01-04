@@ -5,23 +5,21 @@
 			<form action="" method="post" id="messageForm">
 				<fieldset class="full-input">
 					<ul>
+						{% for field in form %}
+							{% if forloop.last %}
+							{{ field }}
+							{% else %}
 						<li>
-							<label for="id_recipient" >recipients:</label>
-							<input type="text" id="id_recipient" />
+							{{ field.errors }}
+							{{ field.label_tag }}
+							{{ field }}
 						</li>
-						<li>
-							<label for="id_subject" >subject:</label>
-							<input type="text" id="id_subject" />
-						</li>
-						<li>
-							<label for="id_body" >message:</label>
-							<textarea type="text" id="id_body" rows="10" ></textarea>
-						</li>
+						{% endif %}
+						{% endfor %}
 						<li>
 							<span class="dark_button_wrap"><a href="#" class="dark_button" id="submitbtn">send message</a></span>
 						</li>
 					</ul>
-					<input type="text" id="memsearch" class="small-input"/>
 			</fieldset>
 			</form>
 		</div>
@@ -30,8 +28,9 @@
 		{% block extrascripts %}
 		<script type="text/javascript">
 			window.addEvent('domready', function(){
-					var a = new UI.MultiLineAutoComplete({
-						searchFieldID:'memsearch',
+try {
+						var a = new UI.MultiLineAutoComplete({
+						searchFieldID:'id_search',
 						filterSubset:true,
 						url:'{% url jaxerprofile_ajax_member_search %}',
 						injectChoice:function(token){
@@ -52,9 +51,21 @@
 						}
 
 					});
+} catch (e) {
+	Log.log(e)
+}
+
+
 					$('submitbtn').addEvent('click', function(e){
 						e.stop();
-						a.setData();
+						try {
+	a.setData();
+} catch (e) {
+	
+}
+
+
+						$('messageForm').submit();
 					});
 			});
 		</script>
