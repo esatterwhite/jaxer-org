@@ -7,3 +7,6 @@ def get_object(obj_ct, obj_id):
     obj = model.objects.get(pk = obj_id)
 
     return obj
+
+def get_model_class(ct_id):
+    return ContentType.objects.get(pk=ct_id).model_class()
