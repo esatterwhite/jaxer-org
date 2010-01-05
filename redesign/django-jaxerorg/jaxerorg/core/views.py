@@ -6,11 +6,8 @@ from django.utils.safestring import EscapeString
 from django.template.defaultfilters import force_escape
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
-<<<<<<< HEAD
 
 from messages.views import compose
-=======
->>>>>>> f56c51b1595f3da8371704352c37036f7ef48861
 from jaxerprofile.forms import MultiUserComposeForm
 def escape_code(request, code=""):
     return HttpResponse(EscapeString(request.POST['code']))
@@ -26,7 +23,6 @@ def editor_test(request):
     form = EditorForm()
     return render_to_response('core/editortest.html', {'form':form}, context_instance=RequestContext(request))
 def search_test(request):
-<<<<<<< HEAD
 
     
     if request.POST:
@@ -43,15 +39,6 @@ def search_test(request):
 
 def multi_mail(request):
      return compose(request, form_class=MultiUserComposeForm, template_name='messages/multiusercompose.html') 
-=======
-    if request.POST:
-        form = MultiUserComposeForm(request.POST)
-        if form.is_valid():
-            form.save()
-    else:
-        form = MultiUserComposeForm() 
-    return render_to_response('searchtest.html', {'form':form}, context_instance=RequestContext(request)) 
->>>>>>> f56c51b1595f3da8371704352c37036f7ef48861
 def ajax_code_form(request):
     ''' returns HTML code for InsertCodeForm as an unordered list'''
     
