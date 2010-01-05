@@ -178,7 +178,7 @@ table.tbl-list th{background:#111; font-size:1.3em;padding:4px;color:#FFF; text-
 table.tbl-list th.compact{font-size:1em; text-align:left; font-weight:bold;}
 textarea{background:#111 none repeat scroll 0 0; border:1px solid #444; color:#FFF; margin-bottom:4px; margin-top:4px; padding-left:5px }
 fieldset.full-input ul li input{width:99.9%;}
-input.small-input{width:150px !important; height:15px; padding:5px}
+
 fieldset li{padding:10px; background:#222; border:1px solid #333; padding:10px; }
 fieldset li textarea{background:#111;color:#ccc; width:99%; border: #333 solid 1px}
 
@@ -479,7 +479,8 @@ ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
 /*		FACEBOOK-LIKE MULTI INPUT SEARCH STYLES		*/
 .multi-input{border:#222 1px solid; width:99%;background:#111;padding:4px}
 #multiline input.multiline, #multiline li.multiline{display:inline;padding:4px;float:left;margin-bottom:2px;}
-#multiline li{margin-right:5px}
+#multiline #multi-input li{margin-right:5px}
 #multiline input.multiline{border:none; background:transparent none;}
-.selectbox-option{padding:4px;background:#272727; border:1px solid #333}
+.selectbox-option{padding:4px;background:#272727; border:1px solid #333; margin-right:5px;}
 .selectbox-option:hover{background:#444; color:#c70c0c; border:1px solid #111}
+input.small-input{width:150px !important; height:15px; padding:5px}

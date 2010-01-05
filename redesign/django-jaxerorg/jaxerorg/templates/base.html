@@ -33,9 +33,9 @@
 					<li><a href="#">Welcome, {{ user.first_name }}</a>
 						<ul>
 							<li><a>profile</a></li>
-							<li><a>messages <span class="compact-text">({% inbox_count %})</span></a>
+							<li><a href="{% url messages_inbox %}">messages <span class="compact-text">({% inbox_count %})</span></a>
 								<ul>
-									<li><a>compose</a></li>
+									<li><a href="{% url jaxer_multiuser_mail_compose %}">compose</a></li>
 								</ul>
 							</li>
 							<li><a href="{% url jaxer_logout_user %}">log out</a></li>

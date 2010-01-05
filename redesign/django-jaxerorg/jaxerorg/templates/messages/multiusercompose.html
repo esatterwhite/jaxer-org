@@ -1,0 +1,78 @@
+{% extends "messages/base.html" %} 
+{% load i18n %}
+
+{% block heading %}{% trans "Compose Message" %}{% endblock %}
+{% block subheading %}
+{% include 'core/mail_toolbar.html' %}
+{% endblock %} 
+
+{% block slab %}
+		<div id="multiline" class="p_all-6 bg-deep border-dark">
+			<form action="" method="post" id="messageForm">
+				<fieldset class="full-input">
+					<ul>
+						{% for field in form %}
+							{% if forloop.last %}
+							{{ field }}
+							{% else %}
+						<li>
+							{{ field.errors }}
+							{{ field.label_tag }}
+							{{ field }}
+						</li>
+						{% endif %}
+						{% endfor %}
+						<li>
+							<span class="dark_button_wrap"><a href="#" class="dark_button" id="submitbtn">send message</a></span>
+						</li>
+					</ul>
+			</fieldset>
+			</form>
+		</div>
+	{% endblock %}
+		{% block extrascripts %}
+		<script type="text/javascript">
+			window.addEvent('domready', function(){
+try {
+						var a = new UI.MultiLineAutoComplete({
+						searchFieldID:'id_search',
+						filterSubset:true,
+						url:'{% url jaxerprofile_ajax_member_search %}',
+						injectChoice:function(token){
+							var choice = new Element('li',{
+								html:this.markQueryValue(token.user)
+							});
+							choice.store('ct', token.ct_id);
+							choice.store('obj_id', token.obj_id);
+							choice.inputValue = token.user;
+							this.addChoiceEvents(choice);
+							choice.inject(this.choices);
+						},
+						onInsert:function(option){
+							Log.log(option);
+						},
+						onRemove:function(){
+							Log.log('remove');
+						}
+
+					});
+} catch (e) {
+	Log.log(e)
+}
+
+
+					$('submitbtn').addEvent('click', function(e){
+						e.stop();
+						try {
+	a.setData();
+} catch (e) {
+	
+}
+
+
+						$('messageForm').submit();
+					});
+			});
+		</script>
+		
+		{% endblock %}
