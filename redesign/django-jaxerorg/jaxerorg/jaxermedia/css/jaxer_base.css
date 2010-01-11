@@ -31,6 +31,7 @@ h6{}
 .success, .approve {background:#215F25;border:2px solid #006600;color:#FFFFFF;font-weight:bold;padding-top:5px;margin-bottom:6px;}
 .error{border:solid 2px #EF0E0E; color:#FFF; font-weight:bold; padding:5px; background:#B30000; margin-bottom:6px;}
 .red{color:#EF0E0E;}
+.bold{font-weight:bolder}
 /*
  * Layout CSS Classes
  */
@@ -215,6 +216,8 @@ fieldset label, .label{color:#14A554;}
 #scroll-pane #scroll-panel .scroll-item { height: 200px; float: left; width: 245px; padding-top: 5%; }
 #slab p{margin-bottom:8px; text-indent:10px;}
 
+#doclist li{margin-left:2px}
+#doclist li ul li, #doclist div ul li{margin-left:15px; list-style-image:url("img/rdo_on.png"); list-style-position:inside;}
 /*		MAIL STYLES			*/
 #mail li{display:inline; padding:2px 6px;}
 #mail li a{padding-left:25px; margin-right:10px; background:transparent url(img/mail-icons.png)no-repeat}
@@ -484,3 +487,4 @@ ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
 .selectbox-option{padding:4px;background:#272727; border:1px solid #333; margin-right:5px;}
 .selectbox-option:hover{background:#444; color:#c70c0c; border:1px solid #111}
 input.small-input{width:150px !important; height:15px; padding:5px}
+input.dialog-url{width:30%;}

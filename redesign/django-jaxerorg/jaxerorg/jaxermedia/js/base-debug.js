@@ -389,7 +389,7 @@ UI.EditMode = new Class({
         MEDIA_URL: 'http://media.jaxer.org/',
         formURL: null, //the url to retrive the editing form from
         editor_element: 'id_content', // the id of the textarea we are going to convert to the editor
-        editorActions: "h2 h4 p | bold italic | insertunorderedlist indent outdent | undo redo | createlink unlink | image | insertcode toggleview",
+        editorActions: "h2 h4 p | bold italic | insertunorderedlist indent outdent | undo redo | createlink urlsearch unlink | image | insertcode toggleview",
         wikiArea: 'js-wiki-',
         _RTE: null
     },
@@ -597,7 +597,7 @@ UI.ScollPanel = new Class({
  *  								The class will look for an element whose id is the concatenation of
  *  				 				the element property followed by the unique idenifier of the controller.
  *
- *					  				controller = 'js-reveal-control-1
+ *					  				controller = 'js-reveal-control-1'
  *  								element = 'my-content-
  *
  *					  				class finds 'my-content-1'
@@ -709,7 +709,37 @@ UI.ContentRevealer = new Class({
         this.fireEvent('closeall', this.options._elements);
     }
 });
-
+UI.JaxerAutoCompleter = new Class({
+	Extends:Autocompleter.Request.JSON,
+	Implements:[Options, Events],
+	options:{
+		onPick:$empty,
+		elementID:null,
+		_element:null,
+		fxOptions:null,
+		postVar:'q',
+		url:null,
+		method:'POST'
+	},
+	initialize:function(elementID, postURL, options){
+		if(options){
+			this.setOptions(options);
+		}
+		this.options.elementID = elementID;
+		this.options.url = postURL;
+		this.options_element = $('elementID');
+		
+		this.parent(elementID, postURL, this.options);
+	},
+	choiceSelect: function(choice) {
+		if (choice) this.choiceOver(choice);
+		//this.setSelection(true);
+		this.queryValue = false;
+		this.hideChoices();	
+		this.fireEvent('pick', choice.retrieve('url'));	
+	}
+	
+});
 /**
  * MultiLineAutoComplete is an extension of Autocompleter.Request.JSON
  * It is a replication of the face book textbox / search bar
@@ -721,6 +751,7 @@ UI.ContentRevealer = new Class({
  * options. 
  * 
  * The primary design purpose is for sending PM's to multiple users at once.
+ *
  */
 UI.MultiLineAutoComplete = new Class({
 	Extends:Autocompleter.Request.JSON,
@@ -731,8 +762,8 @@ UI.MultiLineAutoComplete = new Class({
 		searchInput:null,
 		mainInput:null,
 		replaceInput:true,
-		replaceID:'id_recipient',
-		searchFieldID:'id_search',
+		replaceID:'id_recipient', // the id of the input element we are taking out of the DOM and replacing with the autocomplete
+		searchFieldID:'id_search', // the id of an input element we are going to use for the autocompleter
 		formID:'messageForm',
 		optionClass:'selectbox-option',
 		closeLinkClass:'small red',
@@ -760,7 +791,7 @@ UI.MultiLineAutoComplete = new Class({
 		this.options.mainInput.focus();
 		new Element('br',{
 			'class':'clearfloat'
-		}).inject(container,'bottom')
+		}).inject(container,'bottom');
 		
 	},
 	
