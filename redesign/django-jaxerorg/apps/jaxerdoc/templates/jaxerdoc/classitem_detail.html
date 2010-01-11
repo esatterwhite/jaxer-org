@@ -1,13 +1,7 @@
 {% extends 'jaxerdoc/docs_base.html' %}
 				{% block sidebar %}
 					{% with classitem.online_parameters as parameters %}
-					<span class="fr mt-20 small"><a href="edit" id="js-objectsearch-link" title="what type of object is this parameter">edit</a></span>
 					<h1>Class Parameters</h1>
-					<div class=" p_all-6 mt-6 bg-deep dn" id="js-objectsearch-container">
-						<form>
-							<input type="text" id="object_search" class="attention" style="width:90%;" title="What type of is this paramter?">
-						</form>
-					</div>
 					{% if parameters %}
 					<div >						
 						{% for parameter in parameters %}
@@ -63,7 +57,7 @@
 				{% endblock %}
 				{% block docheading %}
 					{% if classitem.namespace.root_namespace %}
-						{{ classitem.namespace.root_namespace.name }}.{% endif %}{% if classitem.namespace.parent_namespace %}{{ classitem.namespace.parent_namespace.name }}.{% endif %}{{ classitem.namespace.name }}.{{ classitem.name }}
+						<a href="{{ classitem.namespace.root_namespace.get_absolute_url }}">{{ classitem.namespace.root_namespace.name }}</a>.{% endif %}{% if classitem.namespace.parent_namespace %}<a href="{{ classitem.namespace.parent_namespace.get_absolute_url }}">{{ classitem.namespace.parent_namespace.name }}</a>.{% endif %}<a href="{{ classitem.namespace.get_absolute_url }}">{{ classitem.namespace.name }}</a>.<a href="{{ classitem.get_absolute_url }}">{{ classitem.name }}</a>
 				{% endblock %}
 				{% block subheading-left %}
 						{{ classitem.name }}( {% for param in classitem.online_parameters %}
@@ -77,6 +71,8 @@
 													{% if forloop.last %}
 													<a href="{% url jaxerdoc_propose_linked_object param.get_ct_id, classitem.get_ct_id, classitem.pk %}">add</a>
 													{% endif %}
+													{% empty %}
+													<a href="{% url jaxerdoc_add_param_to_object classitem.get_ct_id classitem.pk%}">add</a>
 												{% endfor %} )
 				{% endblock %}
 				{% block subheading-right%}
@@ -119,7 +115,7 @@
 																												{% for obj in method.returns.all %} <span class="{{ obj.ret_object }}">{{obj}}</span>|{% endfor %}
 																											   {% else %} 
 																												<span class="keyword">void</span>
-																										       {% endif %} 
+																										       {% endif %}
 																								
 									</th>
 								</tr>

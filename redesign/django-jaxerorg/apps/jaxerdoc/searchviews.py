@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import simplejson
 from djapian.indexer import CompositeIndexer, Indexer
 from jaxerdoc.models import ClassItem, JaxerNameSpace, JavascriptObject, \
-    Property, Parameter
+    Property, Parameter, Function
 
 try:
     import xapian
@@ -25,7 +25,7 @@ def ajax_doc_search(request):
                     search = search.replace(".", ' AND ')
                 flags= xapian.QueryParser.FLAG_PARTIAL|xapian.QueryParser.FLAG_WILDCARD \
                     |xapian.QueryParser.FLAG_BOOLEAN |xapian.QueryParser.FLAG_PHRASE
-                indexers = [ClassItem.indexer, JaxerNameSpace.ns_indexer, Property.indexer, Parameter.indexer]
+                indexers = [ClassItem.indexer, JaxerNameSpace.ns_indexer, Parameter.indexer, Function.indexer]
                 comp = CompositeIndexer(*indexers)
                 res = comp.search(search).flags(flags)
                 rlist = [dict(name=x.instance.__unicode__(), 
@@ -47,7 +47,7 @@ def ajax_doc_search(request):
         # can probably change to redirect to a search
         # page view as well
         return HttpResponseBadRequest()
-def ajax_property_search():
+def ajax_property_search(request):
     if xapian is None:
         result =[]
         return HttpResponse(simplejson.dumps(result, mimetype="text/javascript"))

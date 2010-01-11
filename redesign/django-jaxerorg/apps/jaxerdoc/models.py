@@ -431,6 +431,8 @@ class JaxerNameSpace(JavascriptObject):
         return self.methods.count() > 0
     def has_parameters(self):
         return self.parameters.count() > 0
+    def has_classes(self):
+        return self.classitem_set.count() > 0
     def inherited_methods(self):
         return self.parent_namespace.methods.filter(on_line=True)
     def inherited_properties(self):

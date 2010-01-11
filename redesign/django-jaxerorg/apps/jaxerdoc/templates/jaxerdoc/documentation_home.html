@@ -1,10 +1,56 @@
-{% extends 'base.html' %}
-{% block content %}
-{% for group in group_list %}
-
-<h4>{{ group }}</h4>
+{% extends 'single_col_center.html' %}
+{% load pagination_tags %}
+{% block heading %}Jaxer API Documentation{% endblock %}
+{% block slab %}
+<div id="doclist" class="width50">
+{% autopaginate group_list 10 %}
+{% for group in group_list|slice:"0:4" %}
+<h1> { {{ group }} }</h1>
  {% for ns in group.jaxernamespace_set.all %}
-     <li>{{ns}}</li>
+      <span id='js-reveal-control-{{ ns.id }}'><li {% if ns.has_classes %} style="cursor:pointer"{% endif %}>{% if ns.has_classes %}<span class="fr"><img src="{{ MEDIA_URL}}/images/white_arrow_down.png" /></span>{% endif %}<a href="ns.get_absolute_url"></a><h4 {% if ns.has_classes %}style="cursor:hand;"{% endif %}><a href="{{ ns.get_absolute_url }}">{{ ns|title }}</a></h4></span>
+	 	{% for class in ns.classitem_set.all %}
+			{% if forloop.first %}
+			<ul id='js-reveal-content-{{ ns.id }}' class="slide">
+				<li><a href="{{ class.get_absolute_url }}">{{ class }}</a></li>
+			{% else %}			
+				<li><a href="{{ class.get_absolute_url }}">{{ class }}</a></li>
+			{% endif %}
+			{% if forloop.last %}
+			</ul>
+			{% endif %}
+		{% endfor %}
+	 </li>
  {% endfor %}
 {% endfor %}
+</div>
+<div id="doclist" class="width50 fr">
+
+{% for group in group_list|slice:"5:9" %}
+<h1> { {{ group }} }</h1>
+ {% for ns in group.jaxernamespace_set.all %}
+      <span id='js-reveal-control-{{ ns.id }}'><li {% if ns.has_classes %} style="cursor:pointer"{% endif %}>{% if ns.has_classes %}<span class="fr"><img src="{{ MEDIA_URL}}/images/white_arrow_down.png" /></span>{% endif %}<a href="ns.get_absolute_url"></a><h4 {% if ns.has_classes %}style="cursor:hand;"{% endif %}><a href="{{ ns.get_absolute_url }}">{{ ns|title }}</a></h4></span>
+	 	{% for class in ns.classitem_set.all %}
+			{% if forloop.first %}
+			<ul id='js-reveal-content-{{ ns.id }}' class="slide">
+				<li><a href="{{ class.get_absolute_url }}">{{ class }}</a></li>
+			{% else %}			
+				<li><a href="{{ class.get_absolute_url }}">{{ class }}</a></li>
+			{% endif %}
+			{% if forloop.last %}
+			</ul>
+			{% endif %}
+		{% endfor %}
+	 </li>
+ {% endfor %}
+{% endfor %}
+</div>
+<script>
+	window.addEvent('domready', function(){
+		$$('span[id^=js-reveal-control').each(function(el){
+			new UI.ContentRevealer(el.id,{
+				container:'ul'	
+			});						
+		});
+	});
+</script>
 {% endblock %}

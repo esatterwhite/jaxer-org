@@ -31,6 +31,7 @@ urlpatterns += patterns('jaxerdoc.wiki_views.moderate',
 
 urlpatterns += patterns('jaxerdoc.wiki_views.create_object',
     url(r'^add/(?P<add_ct_id>\d+)/(?P<ct_id>\d+)-(?P<obj_id>\d+)/$', 'add_object_proposal', name="jaxerdoc_propose_linked_object"),
+    url(r'^add/class/(?P<add_to_ct_id>\d+)/(?P<add_to_id>\d+)/$', 'add_class_to_object', name="jaxerdoc_add_class_to_object"),
     
 )
 

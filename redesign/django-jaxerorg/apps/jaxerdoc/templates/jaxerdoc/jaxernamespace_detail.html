@@ -40,20 +40,7 @@
 {% endblock %}
 {% block docheading %}{% if jaxernamespace.root_namespace %}{{ jaxernamespace.root_namespace.name }}.{% endif %}{% if jaxernamespace.parent_namespace %}{{ jaxernamespace.parent_namespace.name }}.{% endif %}{{ jaxernamespace.name }}{% endblock %}
 {% block subheading-left %}
-						{{ jaxernamespace.name }}( {% for param in jaxernamespace.parameters.all %}
-													{% if param.required %}
-														{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>, 
-													{% comment %}
-													{% else %}
-														[{{ param.name }}:<a href="#">{{ param.content_object.name }}</a>],
-													{% endcomment %} 
-													{% endif %}
-													{% if forloop.last %}
-														<a href="{% url jaxerdoc_propose_linked_object param.get_ct_id, jaxernamespace.get_ct_id, jaxernamespace.pk %}">add</a>
-													{% endif %}
-													{% empty %}
-													<a href="{% url  jaxerdoc_add_param_to_object add_to_id=jaxernamespace.pk, add_to_ct_id=jaxernamespace.get_ct_id %}">add new parameter</a>
-												{% endfor %} )
+				{{ jaxernamespace.name }} [ <a href="{% url jaxerdoc_add_class_to_object jaxernamespace.get_ct_id, jaxernamespace.pk %} " class="object">add class</a> ]
 {% endblock %}
 {% block subheading-right%}
 				Availibity:<a href="#">{{ jaxernamespace.availablity.get_short_version }}+</a>
@@ -63,31 +50,36 @@
 {% endblock %}
 {% block type %}{TYPE:{{jaxernamespace.get_ct.name }} }{% endblock %}
 {% block docbody %}
-				
-				{% if jaxernamespace.jaxernamespace_set.all %}
 				<h2>Namespaces</h2>
+				{% if jaxernamespace.jaxernamespace_set.all %}
+				
 				<div class="mb-6 bg-nearblack border-light">
 					{% for class in jaxernamespace.jaxernamespace_set.all %}
 						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class.get_absolute_url }}">{{ class }}</a></div>
 					{% endfor %}
 				</div>
 				{% else %}
-					{% if jaxernamespace.rootnamespace.all %}
-				<h2>Namespaces</h2>
+					{% if jaxernamespace.rootnamespace.all %}			
 				<div class="mb-6 bg-nearblack border-light">
 					{% for class in jaxernamespace.rootnamespace.all %}
 						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class.get_absolute_url }}">{{ class }}</a></div>
 					{% endfor %}
 				</div>
+					{% else %}
+						<div class="empty-area">This namespace has no additional namespaces</div>
 					{% endif %}
-				{% endif %}				
+				{% endif %}	
+				<h2>Classes</h2>			
 				{% if jaxernamespace.classitem_set.all %}
-				<h2>Classes</h2>
-				<div class="mb-6 bg-nearblack border-light">
+						<div class="mb-6 bg-nearblack border-light">
 					{% for class in jaxernamespace.classitem_set.all %}
-						<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class.get_absolute_url }}">{{ class }}</a></div>
-					{% endfor %}
-				</div>
+
+							<div class="{% cycle 'bg-deep' 'bg-med' %} p_all-6"><a href="{{ class.get_absolute_url }}">{{ class }}</a></div>
+						
+						{% endfor %}
+						</div>
+				{% else %}
+				<div class="empty-area">This namespace has no classes</div>
 				{% endif %}
 				<span class="fr" content_type_id="{{ jaxernamespace.get_ct_id }}" object_id="{{ jaxernamespace.id }}">
 					<a href="{% url jaxerdoc_modify_document ctid=jaxernamespace.get_ct_id, objid=jaxernamespace.id %}" {% if user.is_authenticated %}id="js-wiki-edit-{{ jaxernamespace.id }}"{% endif %} class='mb-4'>edit</a>

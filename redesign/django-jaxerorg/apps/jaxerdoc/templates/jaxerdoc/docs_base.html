@@ -85,7 +85,7 @@
 							//console.log(token.url);
 							window.location.href = token.url;
 						});
-			            this.addChoiceEvents(choice).inject(this.choices)
+			            this.addChoiceEvents(choice).inject(this.choices);
 			        }
 				});
 			});
@@ -95,4 +95,5 @@
 		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.js"></script>
 		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.Extras.js"></script>
 		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.Image.js"></script>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.Urlsearch.js"></script>
 {% endblock %}
