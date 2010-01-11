@@ -33,7 +33,7 @@
 		{% block extrascripts %}
 		<script type="text/javascript">
 			window.addEvent('domready', function(){
-try {
+				try {
 						var a = new UI.MultiLineAutoComplete({
 						searchFieldID:'id_search',
 						filterSubset:true,
@@ -54,25 +54,18 @@ try {
 						onRemove:function(){
 							Log.log('remove');
 						}
-
 					});
-} catch (e) {
-	Log.log(e)
-}
-
-
+				} catch (e) {
+					Log.log(e)
+				}
 					$('submitbtn').addEvent('click', function(e){
 						e.stop();
 						try {
-	a.setData();
-} catch (e) {
-	
-}
-
-
+							a.setData();
+						} catch (e) {						
+						}
 						$('messageForm').submit();
 					});
 			});
 		</script>
-		
 		{% endblock %}

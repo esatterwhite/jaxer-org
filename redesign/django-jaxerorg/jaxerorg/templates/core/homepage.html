@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load generic_content %}
 {% block stylesheets %}
 {% endblock %}
 {% block content %}
@@ -9,11 +9,11 @@
 					<div id="promo-head" class="mt-10">
 						<div class="fl width33">            
                         	<div class="fl width80" id="scroll-pane">
+							{% get_latest_objects core.homescrollpaneitem 4 as panel_items %}
                             <div id="scroll-panel">
-                            	<div class="scroll-item" id="content-1">{{ MEDIA_URL }}</div>
-                                <div class="scroll-item" id="content-2">Good bye world</div>
-                                <div class="scroll-item" id="content-3">hello world Again</div>
-                                <div class="scroll-item" id="content-4">hello world asdf asdfa sdfa sdfasd fasdf asdf asdf asdf asdf </div>
+                            	{% for item in panel_items %}
+                            	<div class="scroll-item" id="content-{{ item.pk }}">{{ item.text }}</div>
+								{% endfor %}
                                 <br class="cr" />
                             </div>
                             </div>
@@ -65,38 +65,23 @@
                 </div>
 				<div class="width63 fr p_all-4 rounded bg_nearblack" >
                 	<div class="fl width50 mt-8">
+                		{% get_latest_objects core.homepageitem 6 as latest_items %}
+						{% for item in latest_items|slice:"0:2" %}
                     	<div class="feature-block">
-                        	<h2>DATA</h2>
-                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
-                            <img src="{{ MEDIA_URL }}images/sql_icon.png" alt=""  />
+                        	<h2>{{ item.title }}</h2>
+                        	<p>{{ item.description }}</p>
+                            <img src="{{ MEDIA_URL }}{{ item.icon }}" alt=""  />
                     	</div>
-                        <div class="feature-block">
-                        	<h2>DOM</h2>
-                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
-                            <img src="{{ MEDIA_URL }}images/dom_icon.png" alt="" />
-                        </div>
-                        <div class="feature-block">
-                        	<h2>SECURE</h2>
-                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
-                            <img src="{{ MEDIA_URL }}images/lock_icon.png" alt=""  />
-                        </div>
+						{% endfor %}
                     </div>
                 	<div class="fr width50 mt-8">
+						{% for item in latest_items|slice:"3:5" %}
                     	<div class="feature-block">
-                        	<h2>UNIFIED</h2>
-                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
-                            <img src="{{ MEDIA_URL }}images/roundtrip_icon.png" alt=""  />
-                        </div>
-                        <div class="feature-block">
-                        	<h2>DESCRIPTOR</h2>
-                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
-                            <img src="" alt="" height="44" width="44" />
-                        </div>
-                        <div class="feature-block">
-                        	<h2>DESCRIPTOR</h2>
-                        	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis, elit non malesuada consectetur, ipsum.</p>
-                            <img src="" alt="" height="44" width="44" />
-                        </div>
+                        	<h2>{{ item.title }}</h2>
+                        	<p>{{ item.description }}</p>
+                            <img src="{{ MEDIA_URL }}{{ item.icon }}" alt=""  />
+                    	</div>
+						{% endfor %}
                     </div>                    
                 </div>
 				<br class="clearfloat" />
