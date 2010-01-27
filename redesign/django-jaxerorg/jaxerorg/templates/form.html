@@ -1,0 +1,72 @@
+{% extends "single_col_center.html" %}
+{% block stylesheets %}
+	<link href="{{ MEDIA_URL }}js/mooeditable/Assets/MooEditable/MooEditable.css" type="text/css" media="screen" rel="stylesheet"/>
+	<link href="{{ MEDIA_URL }}js/mooeditable/Assets/MooEditable/MooEditable.Extras.css" type="text/css" media="screen" rel="stylesheet"/>
+	<link href="{{ MEDIA_URL }}js/mooeditable/Assets/MooEditable/MooEditable.Image.css" type="text/css" media="screen" rel="stylesheet"/>
+{% endblock %}
+{% block slab %}
+<div class="bg-nearblack p_all-6 border-light"><form method="post" action="" id="blogform">
+	<fieldset>
+		<ul>
+            {% for field in form %}
+            {% if forloop.last %}
+            {{ field }}
+            {% else %}
+            <li>
+                {{ field.errors }}
+                {{ field.label_tag }}
+                {{ field|safe }}
+            </li>
+            {% endif %}
+            {% endfor %}
+            <li>
+			<li>
+				<span class="dark_button_wrap"><a href="#" class="dark_button" id="submitbtn">post blog</a></span>
+			</li>
+		</ul>
+	</fieldset>
+</form></div>
+{% endblock %}
+{% block extrascripts %}
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.js"></script>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.Extras.js"></script>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.Image.js"></script>
+		<script type="text/javascript" src="{{ MEDIA_URL }}js/mooeditable/Source/MooEditable/MooEditable.Urlsearch.js"></script>
+		<script type="text/javascript">
+			window.addEvent('domready', function(){
+				
+						var a = new UI.MultiLineAutoComplete({
+						searchFieldID:'id_search',
+						replaceID:'id_related_objects',
+						filterSubset:true,
+						saveCodes:true,
+						postVar:'searchVal',
+						url:'{% url jaxerdoc_ajax_search %}',
+						injectChoice:function(token){
+							var choice = new Element('li',{
+								html:this.markQueryValue(token.name)
+							});
+							choice.store('ct', token.ct_id);
+							choice.store('obj_id', token.obj_id);
+							choice.inputValue = token.name;
+							this.addChoiceEvents(choice);
+							choice.inject(this.choices);
+						},
+						onInsert:function(option){
+							Log.log(option);
+						},
+						onRemove:function(){
+							Log.log('remove');
+						}
+					});
+					$('submitbtn').addEvent('click', function(e){
+						e.stop();
+						try {
+							a.setData();
+						} catch (e) {						
+						}
+						$('blogform').submit();
+					});
+			});
+		</script>		
+{% endblock %}

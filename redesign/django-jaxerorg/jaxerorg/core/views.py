@@ -8,13 +8,28 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from messages.views import compose
 from jaxerprofile.forms import MultiUserComposeForm
-
+from jaxerorg.core.models import HomePageItem
+from jaxinablog.forms import BlogPostForm
+from jaxinablog.models import StandardBlogEntry
 def escape_code(request, code=""):
     return HttpResponse(EscapeString(request.POST['code']))
 def jaxer_home(request):
     return render_to_response('core/homepage.html', 
                              {}, 
                              context_instance=RequestContext(request))
+def formtest(request):
+    b = StandardBlogEntry.objects.get(pk=7)
+    if request.POST:
+        
+        import pdb
+        pdb.set_trace()
+        form = BlogPostForm(request.POST, instance=b)
+        if form.is_valid():
+            blog = form.save()
+            pdb.set_trace()
+    else:
+        form = BlogPostForm(instance=b)
+    return render_to_response('form.html', {'form':form}, context_instance = RequestContext(request))
 def editor_test(request):
     from jaxerorg.core.forms import EditorForm
     form = EditorForm()
@@ -28,7 +43,8 @@ def search_test(request):
             form = MultiUserComposeForm(request.POST)
     else:
         form = MultiUserComposeForm()
-    return render_to_response('searchtest.html', {'form':form}, context_instance=RequestContext(request))
+
+    return render_to_response('core/test.html', {}, context_instance=RequestContext(request))
 
 def multi_mail(request):
      return compose(request, form_class=MultiUserComposeForm, template_name='messages/multiusercompose.html') 

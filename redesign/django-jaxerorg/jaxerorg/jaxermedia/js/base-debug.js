@@ -50,8 +50,7 @@ utils.Overlay = new Class({
         overlay.injectTop(document.body);
         overlay.addEvent('click', function(e){
             this.options.closeable ? this.hide() : false;
-        }
-.bind(this));
+        }.bind(this));
         
     },
     reveal: function(){
@@ -155,28 +154,28 @@ utils.LaunchPad = new Class({
                 opacity: 0
             },
             events: {
-                click: function(e){
+                dblclick: function(e){
                     if (this.options.closeable) {
                         this.hide();
                         this.hideBox();
                     }
-                }
-.bind(this)
+                }.bind(this)
             }
-        
         });
         titleBar = new Element('h2', {
             html: this.options.titleBar || ''
         }).injectTop(box);
         titleBar.addClass('draggable');
         stagewrap = new Element('div', {
-            id: "stagewrap"
+            id: "stagewrap",
+			'class':this.options.className
         }).inject(box);
         stagecontainer = new Element('div', {
             id: 'stagecontainer'
         }).inject(stagewrap);
         stage = new Element('div', {
-            id: 'stage'
+            id: 'stage',
+			'class':'p_all-6'
         }).inject(stagecontainer);
         //inject everything into the 'box'
         
@@ -230,10 +229,8 @@ utils.TabToggler = new Class({
         $$('div a[id^="tab-"]').each(function(tab){
             tab.addEvent('click', function(e){
                 this.tabClick(tab);
-            }
-.bind(this));
-        }
-.bind(this));
+            }.bind(this));
+        }.bind(this));
     },
     tabShow: function(currentTab, shouldShow){
         if (shouldShow === true) {
@@ -365,13 +362,6 @@ utils.AjaxTabToggler = new Class({
             
             //tab.store('content')
         }
-        /*
-         var tabs = this.getAllTabs(tab);
-         $each(tabs, function(id, index){
-         this.tabShow(tabs[index], false)
-         }.bind(this));
-         this.tabShow(tab, true)
-         */
     },
     getTabcontentID: function(tabID){
         return tabID.split('-')[1];
@@ -459,8 +449,7 @@ UI.EditMode = new Class({
         if (this.options.isEditModeOn) {
             this.setOptions({
                 isEditModeOn: false
-            });
-            
+            });          
             window.location.reload();
         }
         else {
@@ -485,13 +474,12 @@ UI.EditMode = new Class({
         form_wrap = new Element('ul').inject(form_set);
         if (this.options.form_url === null) {
             return false;
-        }
-        
+        }      
         new Request.HTML({
             method: 'get',
             url: this.options.formURL,
             onFailure: function(){
-            
+   
             },
             onSuccess: function(rTree, rEls, rHTML, rScripts){
                 var wikiContainer;
@@ -516,18 +504,9 @@ UI.EditMode = new Class({
                 'click': function(evt){
                     this.options._RTE.saveContent();
                     form.submit();
-                    //					new Request.JSON({
-                    //						method:'post',
-                    //						url:this.options.formURL,
-                    //						onFailure:function(){},
-                    //						onSuccess:function(json){
-                    //							console.log(this)
-                    //						}
-                    //					}).send()	
                 }.bind(this)
             }
         }).inject(controls);
-        
     },
     insert: function(content){
         this.options._RTE.selection.insertContent(content);
@@ -563,11 +542,8 @@ UI.ScollPanel = new Class({
                 this.fireEvent('slide', "Sliding", 100);
                 panel.tween('left', -moveTo);
                 this.fireEvent('complete');
-            }
-.bind(this));
-        }
-.bind(this));
-        
+            }.bind(this));
+        }.bind(this));       
     },
     /**
      *
@@ -759,8 +735,10 @@ UI.MultiLineAutoComplete = new Class({
 	options:{
 		onRemove:$empty,
 		onInsert:$empty,
+		onBuild:$empty,
 		searchInput:null,
 		mainInput:null,
+		saveCodes:false,
 		replaceInput:true,
 		replaceID:'id_recipient', // the id of the input element we are taking out of the DOM and replacing with the autocomplete
 		searchFieldID:'id_search', // the id of an input element we are going to use for the autocompleter
@@ -782,12 +760,14 @@ UI.MultiLineAutoComplete = new Class({
 			this.setOptions(options);
 		}
 		this.options.mainInput = $(this.options.searchFieldID);	
-		this.options._inputdata= $(this.options.replaceID)
+		this.options._inputdata= $(this.options.replaceID);
 		this.options._inputdata.setProperty('type', 'hidden');
 		this.parent(this.options.searchFieldID, this.options.url, this.options);
 		var container = new Element('div',{
-			'class':'multi-input'
+			'class':'multi-input',
+			id:'multiline'
 		}).inject(this.options._inputdata,'before').adopt(this.options.mainInput);
+		this.options.mainInput.addClass('multiline');
 		this.options.mainInput.focus();
 		new Element('br',{
 			'class':'clearfloat'
@@ -802,45 +782,46 @@ UI.MultiLineAutoComplete = new Class({
 		this.hideChoices();
 		// if we can't find a similar element in the list
 		// make the new element and add to list
-		if (!this.checkOptions({obj_id:choice.retrieve('obj_id')})) {
-			var opt = new Element('li', {
-				html: choice.get('text'),
-				'class':'multiline '+ this.options.optionClass,
-				events:{
-					mouseover:function(e){
-						//clean up and mess from the .highlight() method
-						e.target.removeProperty('style');
-					}
-				}
-			});
-			new Element('a',{
-				text:' (x)',
-				'class':this.options.closeLinkClass,
-				href:"#",
-				events:{
-					'click':function(e){
-						e.target.getParent('li').dispose();
-						this.options.mainInput.focus();
-						this.fireEvent('remove');
-					}.bind(this)
-				}
-			}).inject(opt);
-			new Element('input',{
-				type:'hidden',
-				id:'data-'+choice.retrieve('obj_id')
-			}).setProperties({
-				'content_type':choice.retrieve('ct'),
-				'obj_id':choice.retrieve('obj_id'),
-				'value':choice.get('text')
-				}).inject(opt);
+		if (!this.checkOptions({obj_id:choice.retrieve('obj_id'), ct:choice.retrieve('ct')})) {
+			var opt = this.buildOption(choice.get('text'), choice.retrieve('ct'), choice.retrieve('obj_id'));
+//			var opt = new Element('li', {
+//				html: choice.get('text'),
+//				'class':'multiline '+ this.options.optionClass,
+//				events:{
+//					mouseover:function(e){
+//						//clean up and mess from the .highlight() method
+//						e.target.removeProperty('style');
+//					}
+//				}
+//			});
+//			new Element('a',{
+//				text:' (x)',
+//				'class':this.options.closeLinkClass,
+//				href:"#",
+//				events:{
+//					'click':function(e){
+//						e.target.getParent('li').dispose();
+//						this.options.mainInput.focus();
+//						this.fireEvent('remove');
+//					}.bind(this)
+//				}
+//			}).inject(opt);
+//			new Element('input',{
+//				type:'hidden',
+//				id:'data-'+choice.retrieve('obj_id')
+//			}).setProperties({
+//				'content_type':choice.retrieve('ct'),
+//				'obj_id':choice.retrieve('obj_id'),
+//				'value':choice.get('text')
+//				}).inject(opt);
 			opt.inject(this.options.mainInput, 'before');
-			this.fireEvent('insert', opt);
+			this.fireEvent('insert', "insert", opt);
 		}
 		//if we did find a similar element we don't do anything
 		this.options.mainInput.value='';
 	},
 	checkOptions:function(opts){
-		var options = $$('input[obj_id={obj_id}]'.substitute(opts)).getParent();
+		var options = $$('input[obj_id={obj_id}][content_type={ct}]'.substitute(opts)).getParent();
 		if(options.length > 0){
 			options[0].highlight(this.options.highlightColor);
 			return true;
@@ -849,13 +830,55 @@ UI.MultiLineAutoComplete = new Class({
 		}				 
 	},
 	setData:function(){
-		data = $$('input[id^=data-]');
+		var data = $$('input[id^=data-]');
+		var setCodes = this.options.saveCodes;
 		var x = [];
 		data.each(function(el){
-			x.push(el.value);
+			if (setCodes) {
+				var code = el.getProperty('content_type') +"-"+el.getProperty('obj_id');
+				x.push(code);
+			}
+			else{x.push(el.value);}
 		});
 		this.options._inputdata.value = x.toString();
 		x = null;
+	},
+	buildOption:function(oText/*String*/, oContentType/*Number*/, oObject_id/*Number*/){
+		var opt = new Element('li', {
+			html: oText,
+			'class':'multiline '+ this.options.optionClass,
+			events:{
+				mouseover:function(e){
+					//clean up and mess from the .highlight() method
+					e.target.removeProperty('style');
+				}
+			}
+		});
+		new Element('a',{
+			text:' (x)',
+			'class':this.options.closeLinkClass,
+			href:"#",
+			events:{
+				'click':function(e){
+					e.target.getParent('li').dispose();
+					this.options.mainInput.focus();
+					this.fireEvent('remove');
+				}.bind(this)
+			}
+		}).inject(opt);
+		new Element('input',{
+			type:'hidden',
+			id:'data-'+oContentType+""+oObject_id
+		}).setProperties({
+			'content_type':oContentType,
+			'obj_id':oObject_id,
+			'value':oText
+			}).inject(opt);
+		opt.store('ct', oContentType);
+		opt.store('obj_id', oObject_id);
+//		opt.inject(this.options.mainInput, 'before');
+		this.fireEvent('build', 'build!', opt);		
+		return opt;
 	}			
 });
 window.addEvent('domready', function(){

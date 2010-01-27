@@ -1,6 +1,6 @@
 html{background:#0D0D0D url(img/primary_bg_deep.jpg) repeat-y top center;}
 body { background:#0D0D0D url(img/primary_bg_deep.jpg) repeat-y top center; font-size:small; color:#ccc; font-family:"Trebuchet MS", Arial, Helvetica, sans-serif }
-input{background-color:#111; color:#FFF; font-family:"Trebuchet MS"; padding-left:2px}
+input{background-color:#111; color:#FFF; font-family:"Trebuchet MS"; padding-left:2px;border:1px solid #333;}
 input.attention{background:#111 url(img/exclamation.png)5px no-repeat; padding:2px 2px 2px 25px; border:#222 1px solid;}
 a{text-decoration:none; color:#15A555}
 a:hover{color:#FFF !important;}
@@ -193,7 +193,9 @@ fieldset li textarea{background:#111;color:#ccc; width:99%; border: #333 solid 1
 #modalBox #stagecontainer{background:#272727; border:1px solid #333;}
 #header-wrap{background:url(img/top_shadow_upward.png) no-repeat bottom center; height:75px; margin:0 auto; width:960px; position:relative;}
 #header #logo{position:absolute; top:20px; left:1%;}
-
+.smallBox{width:250px;}
+.medBox{width:450px;}
+.bigBox{width:700px;}
 #menubar{ background:#0E0E0E url(img/secondary_bg_deep.jpg) repeat-y top center; height:80px; border-top: 1px solid #222; }
 #greenbar{background:#084113 url(img/accent_bg_green.png) top center repeat-y; height:40px;}
 #greenbar-wrap{width:960px; background:url(img/top_shadow_downward.png) top center no-repeat; margin:0 auto; height:100%; border-top:1px solid #333;}
@@ -484,7 +486,7 @@ ul.autocompleter-choices li.autocompleter-selected span.autocompleter-queried
 #multiline input.multiline, #multiline li.multiline{display:inline;padding:4px;float:left;margin-bottom:2px;}
 #multiline #multi-input li{margin-right:5px}
 #multiline input.multiline{border:none; background:transparent none;}
-.selectbox-option{padding:4px;background:#272727; border:1px solid #333; margin-right:5px;}
+.selectbox-option{padding:4px;background:#272727; border:1px solid #333; margin-right:5px;display:inline;float:left;}
 .selectbox-option:hover{background:#444; color:#c70c0c; border:1px solid #111}
 input.small-input{width:150px !important; height:15px; padding:5px}
 input.dialog-url{width:30%;}

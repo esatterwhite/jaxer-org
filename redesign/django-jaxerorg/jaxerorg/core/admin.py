@@ -1,6 +1,6 @@
 '''jaxerorg core admin configuration'''
 from django.contrib import admin
-from jaxerorg.core.models import JaxerRelease, JaxerDownload, Article
+from jaxerorg.core.models import JaxerRelease, JaxerDownload, HomePageItem, HomeScrollPaneItem
 from django.contrib.contenttypes import generic
 
 class JaxerDownloadInline(generic.GenericStackedInline):
@@ -17,4 +17,5 @@ class AdminJaxerRelease(admin.ModelAdmin):
         
     )
 admin.site.register(JaxerRelease, AdminJaxerRelease)
-admin.site.register(Article)
+admin.site.register(HomePageItem)
+admin.site.register(HomeScrollPaneItem)
