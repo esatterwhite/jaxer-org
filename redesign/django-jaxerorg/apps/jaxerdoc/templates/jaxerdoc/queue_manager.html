@@ -50,6 +50,7 @@
 	                                                    <th>Sub Date</th>
 														<th>Comment</th>
 														<th>Status</th>
+														<th>History</th>
 	                                                </tr>
 	                                            </thead>
 	                                            <tbody>
@@ -68,7 +69,7 @@
 														{% else %}
 															<td><a href="{% url jaxerdoc_moderation_preview  queue_id=object.id %}">{{ object.content_object }}</a></td>
 														{% endif %}
-														<td>{{ object.submit_date|date:"M d 'y P" }}</td>
+														<td>{{ object.submit_date|date:"M d Y" }}</td>
 														<td>
 															{% if object.comment %}
 															<a href="" class="tooltips" title="{{ object.comment }}">See Comment</a>
@@ -77,6 +78,7 @@
 															{% endif %}
 														</td>
 														<td>{{ object.moderate|default_if_none:"Awaiting Moderation"|title }}</td>
+														<td><a href="{% url jaxerdoc_object_history object.content_object.get_ct_id, object.content_object.pk %}">see history</a></td>
 	                                                </tr>
 													{% empty %}
 													<tr>

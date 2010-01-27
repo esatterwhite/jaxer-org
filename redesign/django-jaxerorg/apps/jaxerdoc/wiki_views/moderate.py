@@ -7,7 +7,7 @@ from django.views.generic.simple import direct_to_template
 from django.contrib.auth.decorators import login_required, permission_required
 from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse
-from jaxerutils.utils import get_model_class
+from jaxerutils.utils import get_model_class, get_object
 @login_required
 @permission_required('jaxerdoc.can_moderate_docs')
 def queue_manager(request, filter=None):
@@ -25,9 +25,25 @@ def queue_manager(request, filter=None):
     return render_to_response('jaxerdoc/queue_manager.html',
                               {'queue':queue, 'MODERATE':mod},
                               context_instance=RequestContext(request))
-    
-def show_difference(request, queue_id, version=None):
-    
+@login_required
+@permission_required('jaxerdoc.can_moderate_docs')
+def version_manager(request, ct_id, obj_id):
+    obj = get_object(ct_id, obj_id)
+    return render_to_response('jaxerdoc/version_manager.html', {'object':obj}, RequestContext(request))   
+def show_difference(request, slug, ct_id, obj_id, version):
+    obj = get_object(ct_id, obj_id)
+    cs = obj.changes.get(revision = version) 
+    html = cs.display_change_html()
+    if request.is_ajax():
+        return HttpResponse(html, mimetype="text/html")
+    else:
+        return render_to_response('jaxerdoc/queue_difference.html',
+                                  {'difference':html},
+                                  context_instance=RequestContext(request))
+        
+def view_submission(request, queue_id, version=None):
+    import pdb
+    pdb.set_trace()
     queueitem = QueuedItem.objects.get(pk=queue_id)
     html = queueitem.display_diff_html()
     if request.is_ajax():
@@ -35,7 +51,7 @@ def show_difference(request, queue_id, version=None):
     else:
         return render_to_response('jaxerdoc/queue_difference.html',
                                   {'difference':html},
-                                  context_instance=RequestContext(request))
+                                  context_instance=RequestContext(request))        
 
 @login_required
 @permission_required('jaxerdoc.can_moderate_docs')
@@ -123,3 +139,12 @@ def moderate_new_object(request, queue_id):
     return render_to_response('jaxerdoc/moderate_queueitem_%s.html' % queue.action,
                                   {'form':form, 'queueitem':queue},
                                   context_instance=RequestContext(request))
+    
+def revert_document(request, slug, ct_id, obj_id, revision):
+    doc = get_object(ct_id, obj_id)
+    cs = doc.changes.get(revision=revision)
+    cs.reapply(request.user)
+    m = "you has successfully reverted %s to revision %s" %(cs.content_object, cs.revision)
+    request.user.message_set.create(message=m)
+    return HttpResponseRedirect(reverse('jaxerdoc_queue_moderation'))
+ 

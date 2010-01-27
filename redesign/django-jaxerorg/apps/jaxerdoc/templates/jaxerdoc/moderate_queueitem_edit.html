@@ -4,7 +4,7 @@
 {% endblock %}
 {% block heading %}{{ queueitem.content_object }}{% endblock %}
 {% block subheading %}
-<a href="{% url jaxerdoc_moderation_difference queue_id=queueitem.id %}" id="js-wiki-difference" class="mr-10">see difference</a>
+<a href="{% url jaxerdoc_moderation_view_sub queue_id=queueitem.id %}" id="js-wiki-difference" class="mr-10">see difference</a>
 {% if queueitem.comment %}
 <a href="" id="js-wiki-difference" title='{{ queueitem.comment }}' class="tooltips">user comments</a>
 {% endif %}

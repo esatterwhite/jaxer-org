@@ -1,14 +1,14 @@
-from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from diff_match_patch.diff_match_patch import diff_match_patch
+from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.db.models import Q
 from django.db.models import permalink
-from django.contrib.auth.models import User
-from diff_match_patch.diff_match_patch import diff_match_patch
+from django.utils.translation import ugettext_lazy as _
 from jaxerdoc.managers import Manager, CustomObjectManager, GlobalFunctionManager, UnmanagedQueItemManager
-from jaxerorg.core.models import JaxerRelease
 from jaxerhotsauce.models import ChangeSet
+from jaxerorg.core.models import JaxerRelease
 from jaxerutils.models import SelfAwareModel
 import datetime
 

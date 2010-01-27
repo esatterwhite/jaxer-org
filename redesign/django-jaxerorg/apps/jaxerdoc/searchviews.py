@@ -4,6 +4,7 @@ from django.utils import simplejson
 from djapian.indexer import CompositeIndexer, Indexer
 from jaxerdoc.models import ClassItem, JaxerNameSpace, JavascriptObject, \
     Property, Parameter, Function
+import pdb
 
 try:
     import xapian
@@ -15,7 +16,7 @@ def ajax_doc_search(request):
     if xapian is None:
         result =[]
         return HttpResponse(simplejson.dumps(result, mimetype="text/javascript"))
-    if request.is_ajax():       
+    if request.is_ajax():     
         if request.POST:
             try:
                 search = request.POST['searchVal']

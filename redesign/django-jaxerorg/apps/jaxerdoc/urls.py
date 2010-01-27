@@ -8,9 +8,7 @@ urlpatterns = patterns('jaxerdoc.views',
         name='jaxerdoc_document_detail'),
         
          
-    url(r'^(?P<ctid>\d+)-(?P<objid>\d+)/edit/$', 
-        'ajax_document_edit',
-         name="jaxerdoc_modify_document"),  
+
     url(r'^(?P<obj_id>\d+)/$', 
         'diff_test',
          name="difference_text"),                
@@ -24,8 +22,11 @@ urlpatterns += patterns('jaxerdoc.wiki_views.create_object',
 urlpatterns += patterns('jaxerdoc.wiki_views.moderate',
     url(r'^queue/moderate/list/(?P<filter>\w+)/$', 'queue_manager', name="jaxerdoc_queue_moderation_filter"),
     url(r'^queue/moderate/list/$', 'queue_manager', name="jaxerdoc_queue_moderation"),
+    url(r'^queue/history/(?P<ct_id>\d+)-(?P<obj_id>\d+)/$', 'version_manager', name="jaxerdoc_object_history"),
     url(r'^queue/moderate/(?P<queue_id>\d+)/$', 'moderate_queue', name="jaxerdoc_moderation_preview"),
-    url(r'^queue/moderate/(?P<queue_id>\d+)/difference/$', 'show_difference', name="jaxerdoc_moderation_difference"),
+    url(r'^queue/moderate/(?P<queue_id>\d+)/difference/$', 'view_submission', name="jaxerdoc_moderation_view_sub"),
+    url(r'^queue/moderate/(?P<slug>[-\w]+)/(?P<ct_id>\d+)/(?P<obj_id>\d+)revert/(?P<revision>\d+)/$', 'revert_document', name="jaxerdoc_moderation_revert"),
+    url(r'^queue/moderate/(?P<slug>[-\w]+)/(?P<ct_id>\d+)-(?P<obj_id>\d+)/(?P<version>\d+)/difference/$', 'show_difference', name="jaxerdoc_moderation_difference"),
     url(r'^queue/moderate/proposal/(?P<queue_id>\d+)/$', 'moderate_new_object', name='jaxerdoc_moderate_new_object'),    
 )
 
@@ -34,4 +35,8 @@ urlpatterns += patterns('jaxerdoc.wiki_views.create_object',
     url(r'^add/class/(?P<add_to_ct_id>\d+)/(?P<add_to_id>\d+)/$', 'add_class_to_object', name="jaxerdoc_add_class_to_object"),
     
 )
-
+urlpatterns += patterns('jaxerdoc.wiki_views.edit_object',
+    url(r'^(?P<ctid>\d+)-(?P<objid>\d+)/edit/$', 
+        'ajax_document_edit',
+         name="jaxerdoc_modify_document"),                          
+)

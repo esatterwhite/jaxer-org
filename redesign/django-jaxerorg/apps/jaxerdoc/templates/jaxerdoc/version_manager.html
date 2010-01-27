@@ -1,0 +1,88 @@
+{% extends "single_col_center.html" %}
+{% load pagination_tags %}
+{% block heading %}<a href="{{ object.get_absolute_url }}">{{ object }}</a> Version History{% endblock %}
+{% block slab %}
+<div class="p_all-6 bg-nearblack border-dark mb-6">
+	{% autopaginate object.changes.all 25 as changes %}
+	<div class="p_all-6 bg-light mb-6">
+		<table class="tbl-list">
+			<thead>
+				<tr>
+					<th>Revision</th>
+					<th>Editor</th>
+					<th>Date</th>
+					<th>Comments</th>
+					<th>Visualise</th>
+					<th>Action</th>
+					
+				</tr>
+			</thead>
+			<tbody>
+				{% for change in changes %}
+				<tr class="{% cycle '' 'alt' %} align-c">
+					<td>{{change}}</td>
+					<td>{{change.editor}}</td>
+					<td>{{ change.date_modified|date:"M d Y" }}</td>
+					<td>{{ change.comment }}</td>
+					{% with change.content_object as obj %}					
+					<td><a href="{% url jaxerdoc_moderation_difference obj.slug, obj.get_ct_id, obj.pk, change.revision  %}" id="ajax-view-{{ change.revision }}" >see change</a></td>
+					<td><a href="{% url jaxerdoc_moderation_revert obj.slug, obj.get_ct_id, obj.pk, change.revision %}">revert back</a></td>
+					{% endwith %}
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+   <div class="bg-deep border-dark p_all-8">
+   		{% paginate %}
+   </div>                                      
+
+</div>
+{% endblock %}
+{% block extrascripts %}
+<script type="text/javascript">
+	window.addEvent('domready', function(e){
+		$$('a[id^=ajax-view]').each(function(el){
+			/*
+			 * when the user clickes the link we check to see if any content 
+			 * has been stored on that element. If there is content, we display
+			 * it in a new launch pad. Else, we send an ajax which recieves an
+			 * HTML payload. Store it on the element, display it in a new launchpad.
+			 * 
+			 * if javascript is disabled, the user will be directed to a page which 
+			 * displays the same HTML difference content.
+			 */
+			el.addEvent('click', function(evt){
+				var pad, contentHTML;
+				evt.stop();
+				pad = new utils.LaunchPad();
+				contentHTML = el.retrieve('content');
+				if (contentHTML === null)
+				{		
+					new Request.HTML({
+						url:el.getProperty('href'),
+						method:'post',
+						onSuccess:function(responseTree, responseElements, responseHTML, responseJavaScript){
+							el.store('content',responseHTML)						
+							pad.showBox({
+								titleBar:'Difference',
+								className:'medBox',
+								stage:el.retrieve('content'),
+								closeable:true
+							});
+						}
+					}).send()
+				}
+				else{
+					pad.showBox({
+						titleBar:'Difference',
+						stage:contentHTML,
+						className:'medBox',
+						closeable:true
+					});
+				}
+			});
+		});
+	});
+</script>
+{% endblock %}
